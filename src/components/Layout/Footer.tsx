@@ -31,10 +31,14 @@ const Footer: React.FC = () => {
   <span className="sr-only">Facebook</span>
 </a>
 
-              <a href="https://www.youtube.com/@gharsansar_shop" className="text-gray-400 hover:text-blue-400 transition-colors">
+              <a href="https://www.youtube.com/@gharsansar_shop" className="text-gray-400 hover:text-blue-400 transition-colors"
+              target="_blank"
+  rel="noopener noreferrer">
                 <Youtube className="w-5 h-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-blue-400 transition-colors">
+              <a href="https://www.instagram.com/gharsansar_shop/" className="text-gray-400 hover:text-blue-400 transition-colors"
+              target="_blank"
+  rel="noopener noreferrer">
                 <Instagram className="w-5 h-5" />
               </a>
             </div>
@@ -104,11 +108,11 @@ const Footer: React.FC = () => {
               </li>
               <li className="flex items-center space-x-3">
                 <Phone className="w-4 h-4 text-blue-400" />
-                <span className="text-gray-400">07383236795</span>
+                <span className="text-gray-400">08121135980</span>
               </li>
               <li className="flex items-center space-x-3">
                 <Mail className="w-4 h-4 text-blue-400" />
-                <span className="text-gray-400">info@gharsansar.com</span>
+                <span className="text-gray-400">gharsansarshop@gmail.com</span>
               </li>
             </ul>
           </div>

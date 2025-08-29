@@ -2,7 +2,8 @@ import React from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Calendar, User, Clock, Share2 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useBlog } from "../context/BlogContext";
+import { useBlogs } from "../context/BlogContext";
+
 
 const BlogPost: React.FC = () => {
   const { id } = useParams<{ id: string }>();

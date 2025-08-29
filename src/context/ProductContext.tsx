@@ -1,47 +1,75 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 
 export interface Product {
   id: string;
-  name: string;
-  category: string;
-  subCategory?: string;
+  title: string;
+  description: string;
   price: number;
-  image: string; // URL or base64
-  description?: string;
-  stock?: number;
+  image?: string;
+  images?: string[];
+  category?: string;
+  subCategory?: string;
   rating?: number;
-  isFresh?: boolean;
-  createdAt?: number;
 }
-
-const STORAGE_KEY = "products";
 
 interface ProductContextType {
   products: Product[];
-  setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
+  addProduct: (product: Product) => void;
+  updateProduct: (id: string, updated: Partial<Product>) => void;
+  deleteProduct: (id: string) => void;
+  addMultipleProducts: (products: Product[]) => void;
 }
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
-export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const useProducts = () => {
+  const context = useContext(ProductContext);
+  if (!context) throw new Error("useProducts must be used within ProductProvider");
+  return context;
+};
+
+interface Props {
+  children: ReactNode;
+}
+
+export const ProductProvider: React.FC<Props> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = localStorage.getItem("products");
     return saved ? JSON.parse(saved) : [];
   });
 
+  // persist in localStorage
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+    localStorage.setItem("products", JSON.stringify(products));
   }, [products]);
 
+  // ✅ Keep product ID if already provided
+  const addProduct = (product: Product) => {
+    const id = product.id || Date.now().toString();
+    setProducts([...products, { ...product, id }]);
+  };
+
+  const updateProduct = (id: string, updated: Partial<Product>) => {
+    setProducts(products.map((p) => (p.id === id ? { ...p, ...updated } : p)));
+  };
+
+  const deleteProduct = (id: string) => {
+    setProducts(products.filter((p) => p.id !== id));
+  };
+
+  const addMultipleProducts = (newProducts: Product[]) => {
+    const withIds = newProducts.map((p) => ({
+      ...p,
+      id: p.id || Date.now().toString() + Math.random(),
+    }));
+    setProducts([...products, ...withIds]);
+  };
+
   return (
-    <ProductContext.Provider value={{ products, setProducts }}>
+    <ProductContext.Provider
+      value={{ products, addProduct, updateProduct, deleteProduct, addMultipleProducts }}
+    >
       {children}
     </ProductContext.Provider>
   );
 };
-
-export function useProducts() {
-  const ctx = useContext(ProductContext);
-  if (!ctx) throw new Error("useProducts must be used within a ProductProvider");
-  return ctx;
-}

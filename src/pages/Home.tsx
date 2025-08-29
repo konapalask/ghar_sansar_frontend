@@ -6,7 +6,6 @@ import { motion } from 'framer-motion';
 const Home: React.FC = () => {
   const [products, setProducts] = useState<any[]>([]);
 
-  // ✅ Default products
   const defaultProducts = [
     {
       id: '1',
@@ -34,7 +33,6 @@ const Home: React.FC = () => {
     },
   ];
 
-  // ✅ Load from localStorage
   useEffect(() => {
     const stored = localStorage.getItem('products');
     if (stored) {
@@ -44,21 +42,6 @@ const Home: React.FC = () => {
       setProducts(defaultProducts);
     }
   }, []);
-
-  // ✅ Add new product (example button)
-  const addProduct = () => {
-    const newProduct = {
-      id: Date.now().toString(),
-      name: 'New Stylish Lamp',
-      price: 499,
-      image: 'https://images.pexels.com/photos/112811/pexels-photo-112811.jpeg?auto=compress&cs=tinysrgb&w=600',
-      rating: 5.0,
-      isFresh: true,
-    };
-    const updated = [newProduct, ...products];
-    setProducts(updated);
-    localStorage.setItem('products', JSON.stringify(updated));
-  };
 
   const features = [
     {
@@ -79,7 +62,7 @@ const Home: React.FC = () => {
   ];
 
   return (
-    <div>
+    <main className="w-full max-w-screen-xl mx-auto px-8 sm:px-6 lg:px-8">
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-blue-50 to-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -94,8 +77,7 @@ const Home: React.FC = () => {
                 <span className="text-blue-600 block">Home Today</span>
               </h1>
               <p className="text-xl text-gray-600 mb-8">
-                Discover premium home decor items and professional interior design services 
-                to create the perfect living space.
+                Discover premium home decor items and professional interior design services to create the perfect living space.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
@@ -113,35 +95,24 @@ const Home: React.FC = () => {
                 </Link>
               </div>
             </motion.div>
-            
+
             <motion.div
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
               className="relative"
             >
-              {/* Replace image with video */}
-             <motion.div
-  initial={{ opacity: 0, x: 50 }}
-  animate={{ opacity: 1, x: 0 }}
-  transition={{ duration: 0.6, delay: 0.2 }}
-  className="relative"
->
-  <video
-    src="/videos/home-showcase.mp4"   // References public/videos/home-showcase.mp4
-    autoPlay
-    muted
-    loop
-    playsInline
-    className="rounded-2xl shadow-2xl w-full h-auto"
-    poster="https://images.pexels.com/photos/1866149/pexels-photo-1866149.jpeg?auto=compress&cs=tinysrgb&w=800"
-  >
-    Your browser does not support the video tag.
-  </video>
-</motion.div>
-
-
-
+              <video
+                src="/videos/home-showcase.mp4"
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="rounded-2xl shadow-2xl w-full h-auto"
+                poster="https://images.pexels.com/photos/1866149/pexels-photo-1866149.jpeg?auto=compress&cs=tinysrgb&w=800"
+              >
+                Your browser does not support the video tag.
+              </video>
             </motion.div>
           </div>
         </div>
@@ -170,7 +141,7 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Featured / Fresh Products */}
+      {/* Featured Products */}
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
@@ -181,7 +152,7 @@ const Home: React.FC = () => {
               Discover our most popular home decor items, carefully selected for style and quality.
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {products.map((product, index) => (
               <motion.div
@@ -199,21 +170,20 @@ const Home: React.FC = () => {
                   />
                   <div
                     className={`absolute top-4 left-4 px-2 py-1 rounded-lg text-sm font-medium text-white ${
-                      product.isFresh ? 'bg-green-600' : 'bg-blue-600'
+                      product.isFresh ? "bg-green-600" : "bg-blue-600"
                     }`}
                   >
-                    {product.isFresh ? 'Fresh' : 'Featured'}
+                    {product.isFresh ? "Fresh" : "Featured"}
                   </div>
                 </div>
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="text-xl font-semibold text-gray-900">{product.name}</h3>
                     <div className="flex items-center space-x-1">
-                      <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                      <span className="text-sm text-gray-600">{product.rating}</span>
+                      
                     </div>
                   </div>
-                  <p className="text-2xl font-bold text-blue-600 mb-4">₹{product.price}</p>
+                 
                   <Link
                     to={`/products/${product.id}`}
                     className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium inline-flex items-center justify-center group"
@@ -225,7 +195,7 @@ const Home: React.FC = () => {
               </motion.div>
             ))}
           </div>
-          
+
           <div className="text-center mt-12">
             <Link
               to="/products"
@@ -251,8 +221,7 @@ const Home: React.FC = () => {
                 Professional Interior Design Services
               </h2>
               <p className="text-lg text-gray-600 mb-8">
-                Our expert designers will help you create beautiful, functional spaces that reflect 
-                your personal style and meet your lifestyle needs.
+                Our expert designers will help you create beautiful, functional spaces that reflect your personal style and meet your lifestyle needs.
               </p>
               <ul className="space-y-4 mb-8">
                 <li className="flex items-center space-x-3">
@@ -282,7 +251,7 @@ const Home: React.FC = () => {
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
             </motion.div>
-            
+
             <motion.div
               initial={{ opacity: 0, x: 50 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -303,7 +272,7 @@ const Home: React.FC = () => {
           </div>
         </div>
       </section>
-    </div>
+    </main>
   );
 };
 

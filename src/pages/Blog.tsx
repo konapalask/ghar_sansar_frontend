@@ -1,22 +1,24 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Calendar, User, ArrowRight } from "lucide-react";
+import { Calendar, User } from "lucide-react";
 import { motion } from "framer-motion";
-import { useBlog } from "../context/BlogContext";
+import { useBlogs } from "../context/BlogContext";
 
 const Blog: React.FC = () => {
-  const { posts } = useBlog();
-  const categories = ["All", ...Array.from(new Set(posts.map((p) => p.category)))];
+  const { blogs } = useBlogs(); // ✅ correct hook
+  const categories = ["All", ...Array.from(new Set(blogs.map((p) => p.category)))];
   const [selectedCategory, setSelectedCategory] = React.useState("All");
 
   const filteredPosts =
     selectedCategory === "All"
-      ? posts
-      : posts.filter((post) => post.category === selectedCategory);
+      ? blogs
+      : blogs.filter((post) => post.category === selectedCategory);
 
-  if (!posts.length) {
+  if (!blogs.length) {
     return (
-      <div className="text-center p-10 text-gray-500">No blog posts available.</div>
+      <div className="text-center p-10 text-gray-500">
+        No blog posts available.
+      </div>
     );
   }
 
@@ -38,8 +40,8 @@ const Blog: React.FC = () => {
             transition={{ delay: 0.1 }}
             className="text-xl text-gray-600 max-w-3xl mx-auto"
           >
-            Discover the latest trends, expert tips, and creative ideas to transform
-            your home into a beautiful sanctuary.
+            Discover the latest trends, expert tips, and creative ideas to
+            transform your home into a beautiful sanctuary.
           </motion.p>
         </div>
 
@@ -76,9 +78,10 @@ const Blog: React.FC = () => {
             <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
               <div className="grid grid-cols-1 lg:grid-cols-2">
                 <div className="relative h-64 lg:h-full">
+                  {/* Featured Post Image */}
                   <img
                     src={filteredPosts[0].image}
-                    alt={filteredPosts.title}
+                    alt={filteredPosts[0].title}
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute top-4 left-4 bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-medium">
@@ -92,14 +95,18 @@ const Blog: React.FC = () => {
                     </span>
                     <div className="flex items-center space-x-1">
                       <Calendar className="w-4 h-4" />
-                      <span>{new Date(filteredPosts[0].date).toLocaleDateString()}</span>
+                      <span>
+                        {new Date(filteredPosts[0].date).toLocaleDateString()}
+                      </span>
                     </div>
-                    <span>{filteredPosts.readTime}</span>
+                    <span>{filteredPosts[0].readTime}</span>
                   </div>
                   <h2 className="text-3xl font-bold text-gray-900 mb-6">
                     {filteredPosts[0].title}
                   </h2>
-                  <p className="text-gray-600 mb-6">{filteredPosts.excerpt}</p>
+                  <p className="text-gray-600 mb-6">
+                    {filteredPosts[0].excerpt}
+                  </p>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <User className="w-5 h-5 text-gray-400" />
@@ -151,7 +158,9 @@ const Blog: React.FC = () => {
                 <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors">
                   {post.title}
                 </h3>
-                <p className="text-gray-600 mb-4 line-clamp-3">{post.excerpt}</p>
+                <p className="text-gray-600 mb-4 line-clamp-3">
+                  {post.excerpt}
+                </p>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <User className="w-4 h-4 text-gray-400" />
@@ -168,8 +177,6 @@ const Blog: React.FC = () => {
             </motion.div>
           ))}
         </div>
-
-        {/* Newsletter Signup (if any) */}
       </div>
     </div>
   );

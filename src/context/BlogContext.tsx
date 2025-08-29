@@ -1,57 +1,60 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 
-// Edit this structure as needed for your app
-export interface BlogPost {
+// Blog type
+export interface Blog {
   id: string;
   title: string;
-  excerpt: string;
   content: string;
-  image: string;
-  author: string;
-  date: string; // ISO string
-  readTime: string;
+  excerpt: string;
   category: string;
-  tags?: string[];
+  author: string;
+  date: string;
+  image: string;
+  readTime: string; // e.g., "5 min read"
 }
 
 interface BlogContextType {
-  posts: BlogPost[];
-  setPosts: React.Dispatch<React.SetStateAction<BlogPost[]>>;
-  addPost: (post: BlogPost) => void;
-  updatePost: (post: BlogPost) => void;
-  deletePost: (id: string) => void;
+  blogs: Blog[];
+  addBlog: (blog: Blog) => void;
+  deleteBlog: (id: string) => void;
+  updateBlog: (id: string, updatedBlog: Blog) => void;
 }
 
 const BlogContext = createContext<BlogContextType | undefined>(undefined);
 
-const STORAGE_KEY = "blog-posts";
-
 export const BlogProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [posts, setPosts] = useState<BlogPost[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? JSON.parse(saved) : [];
+  const [blogs, setBlogs] = useState<Blog[]>(() => {
+    const stored = localStorage.getItem("blogs");
+    return stored ? JSON.parse(stored) : [];
   });
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
-  }, [posts]);
+    localStorage.setItem("blogs", JSON.stringify(blogs));
+  }, [blogs]);
 
-  // Functions for CRUD
-  const addPost = (post: BlogPost) => setPosts((prev) => [post, ...prev]);
-  const updatePost = (post: BlogPost) =>
-    setPosts((prev) => prev.map((p) => (p.id === post.id ? post : p)));
-  const deletePost = (id: string) =>
-    setPosts((prev) => prev.filter((p) => p.id !== id));
+  const addBlog = (blog: Blog) => {
+    setBlogs((prev) => [...prev, blog]);
+  };
+
+  const deleteBlog = (id: string) => {
+    setBlogs((prev) => prev.filter((b) => b.id !== id));
+  };
+
+  const updateBlog = (id: string, updatedBlog: Blog) => {
+    setBlogs((prev) => prev.map((b) => (b.id === id ? updatedBlog : b)));
+  };
 
   return (
-    <BlogContext.Provider value={{ posts, setPosts, addPost, updatePost, deletePost }}>
+    <BlogContext.Provider value={{ blogs, addBlog, deleteBlog, updateBlog }}>
       {children}
     </BlogContext.Provider>
   );
 };
 
-export function useBlog() {
-  const ctx = useContext(BlogContext);
-  if (!ctx) throw new Error("useBlog must be used within BlogProvider");
-  return ctx;
-}
+export const useBlogs = (): BlogContextType => {
+  const context = useContext(BlogContext);
+  if (!context) {
+    throw new Error("useBlogs must be used within a BlogProvider");
+  }
+  return context;
+};
