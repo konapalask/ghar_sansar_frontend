@@ -80,7 +80,7 @@ const Home: React.FC = () => {
 >
   <div className="aspect-video rounded-2xl overflow-hidden shadow-2xl">
     <video
-      src="/videos/homepagevideo.mp4"
+      src="/videos/prefinal2.mp4"
       autoPlay
       muted
       loop

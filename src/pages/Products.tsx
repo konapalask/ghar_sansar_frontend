@@ -24,60 +24,139 @@ function getPageNumbers(current: number, total: number, delta = 1): (number | st
   return rangeWithDots;
 }
 
+// Helper to format names nicely
+const formatName = (name: string) => {
+  if (!name) return "";
+  return name
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+};
+
+// Handwriting font for subcategories
+const handwritingStyle = "font-bold italic font-cursive"; // Replace font-cursive with actual font in Tailwind config
+
 const ProductsPage: React.FC = () => {
   const { products } = useProducts();
   const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("All");
+  const [subCategoryFilter, setSubCategoryFilter] = useState("All");
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   const itemsPerPage = 12;
 
-  // Simulate loading with vertical spin animation for logo
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1500); // 1.5s loading
+    const timer = setTimeout(() => setLoading(false), 1000);
     return () => clearTimeout(timer);
   }, []);
 
-  // Filter products by title based on search string
-  const filtered = useMemo(() => {
-    return products.filter((p) =>
-      search ? p.title.toLowerCase().includes(search.toLowerCase()) : true
+  // Dynamic categories
+  const categories = useMemo(() => {
+    const cats = Array.from(new Set(products.map((p) => p.category)));
+    return ["All", ...cats];
+  }, [products]);
+
+  // Dynamic subcategories based on selected category
+  const subCategories = useMemo(() => {
+    if (categoryFilter === "All") {
+      const subs = Array.from(new Set(products.map((p) => p.subCategory)));
+      return ["All", ...subs];
+    }
+    const subs = Array.from(
+      new Set(products.filter((p) => p.category === categoryFilter).map((p) => p.subCategory))
     );
-  }, [products, search]);
+    return ["All", ...subs];
+  }, [products, categoryFilter]);
+
+  // Filter products by search, category, subcategory
+  const filtered = useMemo(() => {
+    return products.filter((p) => {
+      const matchesSearch = search
+        ? p.title.toLowerCase().includes(search.toLowerCase())
+        : true;
+      const matchesCategory =
+        categoryFilter === "All" ? true : p.category === categoryFilter;
+      const matchesSubCategory =
+        subCategoryFilter === "All" ? true : p.subCategory === subCategoryFilter;
+      return matchesSearch && matchesCategory && matchesSubCategory;
+    });
+  }, [products, search, categoryFilter, subCategoryFilter]);
 
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
-  const currentProducts = filtered.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+  const currentProducts = filtered.slice(
+    (page - 1) * itemsPerPage,
+    page * itemsPerPage
+  );
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-white">
         <img
-          src="/images/logo.png" // Replace with your actual logo path
+          src="/images/logo.png"
           alt="Loading..."
-          className="h-40 w-34 animate-spin"
+          className="h-40 w-40 animate-spin"
         />
       </div>
     );
   }
 
   return (
-    <div className="p-4 md:p-6 max-w-7xl mx-auto bg-white min-h-screen">
-      <h1 className="text-2xl md:text-4xl font-bold mb-6">Products</h1>
+    <div className="p-4 md:p-6 max-w-7xl mx-auto bg-white min-h-screen font-sans">
+  <h1 className="text-3xl md:text-5xl font-bold italic font-cursive mb-6">
+    Products by Gharsansar
+  </h1>
 
-      {/* Search */}
-      <div className="flex items-center border rounded px-3 py-2 w-full md:max-w-xs bg-white mb-6">
-        <Search size={18} className="text-gray-400 mr-2" />
-        <input
-          type="search"
-          placeholder="Search products..."
-          className="flex-grow bg-transparent outline-none text-sm"
-          value={search}
+
+      {/* Filters */}
+      <div className="flex flex-col md:flex-row items-start md:items-center gap-3 mb-6">
+        {/* Search */}
+        <div className="flex items-center border rounded px-3 py-2 w-full md:max-w-xs bg-white">
+          <Search size={18} className="text-gray-400 mr-2" />
+          <input
+            type="search"
+            placeholder="Search products..."
+            className="flex-grow bg-transparent outline-none text-sm"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+          />
+        </div>
+
+        {/* Category Filter */}
+        <select
+          className="border rounded px-3 py-2 text-sm font-serif italic"
+          value={categoryFilter}
           onChange={(e) => {
-            setSearch(e.target.value);
+            setCategoryFilter(e.target.value);
+            setSubCategoryFilter("All"); // reset subcategory when category changes
             setPage(1);
           }}
-        />
+        >
+          {categories.map((cat) => (
+            <option key={cat} value={cat}>
+              {formatName(cat)}
+            </option>
+          ))}
+        </select>
+
+        {/* Subcategory Filter */}
+        <select
+          className={`border rounded px-3 py-2 text-sm ${handwritingStyle}`}
+          value={subCategoryFilter}
+          onChange={(e) => {
+            setSubCategoryFilter(e.target.value);
+            setPage(1);
+          }}
+        >
+          {subCategories.map((sub) => (
+            <option key={sub} value={sub}>
+              {formatName(sub)}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Products Grid */}
@@ -100,7 +179,10 @@ const ProductsPage: React.FC = () => {
                   No Image
                 </div>
               )}
-              <h2 className="text-lg font-semibold mt-2">{p.title || "Untitled"}</h2>
+              <h2 className="text-lg font-semibold mt-2">{formatName(p.title || "Untitled")}</h2>
+              <p className="text-sm text-gray-500 font-bold italic font-cursive">
+                {formatName(p.category)} / {formatName(p.subCategory)}
+              </p>
             </div>
           ))}
         </div>

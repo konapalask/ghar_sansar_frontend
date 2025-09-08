@@ -2,7 +2,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import axios from "axios";
 
-// Product interface
 export interface Product {
   id: string;
   title: string;
@@ -15,92 +14,124 @@ export interface Product {
   subCategory: string;
 }
 
-// Context type
 interface ProductContextType {
   products: Product[];
-  addProduct: (p: Product) => void;
-  updateProduct: (id: string, p: Product) => void;
-  deleteProduct: (id: string) => void;
+  addProduct: (p: Partial<Product> & { imageFile?: File }) => Promise<void>;
+  updateProduct: (id: string, p: Partial<Product> & { imageFile?: File }) => Promise<void>;
+  deleteProduct: (id: string, category: string, subCategory: string) => Promise<void>;
 }
 
-// Create context
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
-// Hook for convenience
 export const useProducts = () => {
   const ctx = useContext(ProductContext);
   if (!ctx) throw new Error("useProducts must be used within ProductProvider");
   return ctx;
 };
 
-// ✅ Fix broken CloudFront URLs
+// Fix CloudFront / URL issues
 const fixImageUrl = (url: string) => {
   if (!url) return "";
-  return url
-    .replace(/^https?:\/\/https?:\/\//, "https://")
-    .replace(/([^:]\/)\/+/g, "$1");
+  return url.replace(/^https?:\/\/https?:\/\//, "https://").replace(/([^:]\/)\/+/g, "$1");
 };
 
-// Provider component using Axios
 export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>([]);
-  const API_BASE =
-    import.meta.env.VITE_AWS_API_URL ||
-    "https://backend.gharsansar.store/api/v1";
+  const API_BASE = import.meta.env.VITE_AWS_API_URL || "https://backend.gharsansar.store/api/v1";
+
+  // Fetch all products from backend
+  const fetchProducts = async () => {
+    try {
+      const res = await axios.get(`${API_BASE}/storage/uploads/products`, {
+        headers: { accept: "application/json" },
+      });
+      const data = res.data;
+
+      const allProducts: Product[] = [];
+      data.categories?.forEach((category: any) => {
+        category.subcategories?.forEach((sub: any) => {
+          sub.images?.forEach((img: any, index: number) => {
+            allProducts.push({
+              id: img.id || `${category.name}-${sub.name}-${index}`,
+              title: img.title || "Untitled Product",
+              description: img.description || "",
+              price: img.price || 0,
+              actualPrice: img.actual_price || 0,
+              image: fixImageUrl(img.image),
+              video: img.video || "",
+              category: category.name,
+              subCategory: sub.name,
+            });
+          });
+        });
+      });
+
+      setProducts(allProducts);
+    } catch (err) {
+      console.error("Error fetching products:", err);
+    }
+  };
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const res = await axios.get(`${API_BASE}/storage/uploads/products`, {
-          headers: { accept: "application/json" },
-        });
-        const data = res.data;
-
-        const allProducts: Product[] = [];
-        if (data?.categories && Array.isArray(data.categories)) {
-          data.categories.forEach((category: any) => {
-            if (category.subcategories && Array.isArray(category.subcategories)) {
-              category.subcategories.forEach((sub: any) => {
-                if (sub.images && Array.isArray(sub.images)) {
-                  sub.images.forEach((img: any, index: number) => {
-                    allProducts.push({
-                      id: `${category.name}-${sub.name}-${index}`, // Unique ID
-                      title: img.title || "Untitled Product",
-                      description: img.description || "No description available",
-                      price: img.price || 0,
-                      actualPrice: img.actual_price || 0, // ✅ FIXED FIELD
-                      image: fixImageUrl(img.image),
-                      video: img.video || "",
-                      category: category.name,
-                      subCategory: sub.name,
-                    });
-                  });
-                }
-              });
-            }
-          });
-        }
-        setProducts(allProducts);
-      } catch (err) {
-        console.error("Error fetching products:", err);
-      }
-    };
     fetchProducts();
   }, []);
 
-  // ✅ Add Product
-  const addProduct = (p: Product) =>
-    setProducts((prev) => [...prev, { ...p, image: fixImageUrl(p.image) }]);
+  // Add product
+  const addProduct = async (p: Partial<Product> & { imageFile?: File }) => {
+    try {
+      const formData = new FormData();
+      formData.append("category_type", "products");
+      formData.append("category_name", p.category!);
+      formData.append("subcategory_name", p.subCategory!);
+      formData.append("title", p.title!);
+      formData.append("price", (p.price ?? 0).toString());
+      formData.append("actual_price", (p.actualPrice ?? 0).toString());
+      formData.append("description", p.description ?? "");
+      formData.append("features", "");
 
-  // ✅ Update Product
-  const updateProduct = (id: string, p: Product) =>
-    setProducts((prev) =>
-      prev.map((prod) => (prod.id === id ? { ...p, image: fixImageUrl(p.image) } : prod))
-    );
+      if (p.imageFile) formData.append("image", p.imageFile, p.imageFile.name.replace(/\s/g, "-"));
 
-  // ✅ Delete Product
-  const deleteProduct = (id: string) =>
-    setProducts((prev) => prev.filter((prod) => prod.id !== id));
+      await axios.post(`${API_BASE}/storage/uploads`, formData);
+      await fetchProducts();
+    } catch (err) {
+      console.error("Error adding product:", err);
+    }
+  };
+
+  // Update product
+  const updateProduct = async (id: string, p: Partial<Product> & { imageFile?: File }) => {
+    try {
+      const formData = new FormData();
+      formData.append("category_type", "products");
+      formData.append("id", id);
+      formData.append("category_name", p.category!);
+      formData.append("subcategory_name", p.subCategory!);
+      formData.append("title", p.title!);
+      formData.append("price", (p.price ?? 0).toString());
+      formData.append("actual_price", (p.actualPrice ?? 0).toString());
+      formData.append("description", p.description ?? "");
+      formData.append("features", "");
+
+      if (p.imageFile) formData.append("image", p.imageFile, p.imageFile.name.replace(/\s/g, "-"));
+
+      await axios.put(`${API_BASE}/storage/uploads/products`, formData);
+      await fetchProducts();
+    } catch (err) {
+      console.error("Error updating product:", err);
+    }
+  };
+
+  // Delete product
+  const deleteProduct = async (id: string, category: string, subCategory: string) => {
+    try {
+      await axios.delete(
+        `${API_BASE}/storage/uploads/products?category_name=${category}&subcategory_name=${subCategory}&id=${id}`
+      );
+      setProducts((prev) => prev.filter((prod) => prod.id !== id));
+    } catch (err) {
+      console.error("Error deleting product:", err);
+    }
+  };
 
   return (
     <ProductContext.Provider value={{ products, addProduct, updateProduct, deleteProduct }}>

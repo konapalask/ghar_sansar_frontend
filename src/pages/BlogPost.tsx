@@ -7,7 +7,12 @@ import { useBlogs } from "../context/BlogContext";
 
 const BlogPost: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { blogs } = useBlogs();
+  const { blogs, loading, error } = useBlogs();
+
+  if (loading)
+    return <div className="text-center py-20 text-gray-500">Loading blog post...</div>;
+  if (error)
+    return <div className="text-center py-20 text-red-500">Error: {error}</div>;
 
   const post = blogs.find((p) => p.id === id);
 
@@ -47,12 +52,13 @@ const BlogPost: React.FC = () => {
           <ArrowLeft className="w-4 h-4 mr-2" /> Back to Blog
         </Link>
 
+        {/* Main Post */}
         <motion.article
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-2xl shadow-xl overflow-hidden"
         >
-          {/* Media Section */}
+          {/* Media */}
           <div className="relative w-full lg:h-[500px] h-80">
             {post.video && isYouTube && (
               <iframe
@@ -74,14 +80,10 @@ const BlogPost: React.FC = () => {
                 scrolling="no"
                 allowTransparency={true}
                 className="w-full h-full object-cover"
-              ></iframe>
+              />
             )}
             {!post.video && post.image && (
-              <img
-                src={post.image}
-                alt={post.title}
-                className="w-full h-full object-cover"
-              />
+              <img src={post.image} alt={post.title} className="w-full h-full object-cover" />
             )}
             <div className="absolute inset-0 bg-black bg-opacity-40"></div>
             <div className="absolute bottom-8 left-8 right-8 text-white">
@@ -132,50 +134,53 @@ const BlogPost: React.FC = () => {
             {blogs
               .filter((b) => b.id !== post.id)
               .slice(0, 4)
-              .map((related) => (
-                <Link
-                  key={related.id}
-                  to={`/blog/${related.id}`}
-                  className="block bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition"
-                >
-                  {related.video ? (
-                    related.video.includes("youtube") ? (
-                      <iframe
-                        width="100%"
-                        height="200"
-                        src={`https://www.youtube.com/embed/${extractYouTubeId(related.video)}`}
-                        title="YouTube video"
-                        frameBorder="0"
-                        allowFullScreen
-                        className="w-full object-cover"
-                      />
-                    ) : (
-                      <iframe
-                        src={`https://www.instagram.com/p/${extractInstagramId(related.video)}/embed`}
-                        width="100%"
-                        height="200"
-                        frameBorder="0"
-                        scrolling="no"
-                        allowTransparency={true}
-                        className="w-full object-cover"
-                      />
-                    )
-                  ) : (
-                    <img
-                      src={related.image}
-                      alt={related.title}
-                      className="w-full h-48 object-cover"
-                    />
-                  )}
+              .map((related) => {
+                const isYt = related.video?.includes("youtube") || related.video?.includes("youtu.be");
+                const isIg = related.video?.includes("instagram.com");
 
-                  <div className="p-4">
-                    <h3 className="text-xl font-semibold">{related.title}</h3>
-                    <p className="text-gray-600 line-clamp-2">
-                      {related.description}
-                    </p>
-                  </div>
-                </Link>
-              ))}
+                return (
+                  <Link
+                    key={related.id}
+                    to={`/blog/${related.id}`}
+                    className="block bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition"
+                  >
+                    {related.video ? (
+                      isYt ? (
+                        <iframe
+                          width="100%"
+                          height="200"
+                          src={`https://www.youtube.com/embed/${extractYouTubeId(related.video)}`}
+                          title="YouTube video"
+                          frameBorder="0"
+                          allowFullScreen
+                          className="w-full object-cover"
+                        />
+                      ) : isIg ? (
+                        <iframe
+                          src={`https://www.instagram.com/p/${extractInstagramId(related.video)}/embed`}
+                          width="100%"
+                          height="200"
+                          frameBorder="0"
+                          scrolling="no"
+                          allowTransparency={true}
+                          className="w-full object-cover"
+                        />
+                      ) : null
+                    ) : (
+                      <img
+                        src={related.image}
+                        alt={related.title}
+                        className="w-full h-48 object-cover"
+                      />
+                    )}
+
+                    <div className="p-4">
+                      <h3 className="text-xl font-semibold">{related.title}</h3>
+                      <p className="text-gray-600 line-clamp-2">{related.description}</p>
+                    </div>
+                  </Link>
+                );
+              })}
           </div>
         </motion.div>
       </div>
