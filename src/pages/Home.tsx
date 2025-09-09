@@ -31,8 +31,8 @@ const Home: React.FC = () => {
     },
   ];
 
-  // ✅ Pick last 6 products as "recent"
-  const recentProducts = [...products].slice(-6).reverse();
+  // ✅ Pick first 6 products as "recent" (backend usually gives newest first)
+  const recentProducts = products.slice(0, 6);
 
   return (
     <main className="w-full max-w-screen-xl mx-auto px-8 sm:px-6 lg:px-8">
@@ -71,27 +71,27 @@ const Home: React.FC = () => {
               </div>
             </motion.div>
 
-           {/* Video */}
-<motion.div
-  initial={{ opacity: 0, x: 50 }}
-  animate={{ opacity: 1, x: 0 }}
-  transition={{ duration: 0.6, delay: 0.2 }}
-  className="relative w-full"
->
-  <div className="aspect-video rounded-2xl overflow-hidden shadow-2xl">
-    <video
-      src="/videos/prefinal2.mp4"
-      autoPlay
-      muted
-      loop
-      playsInline
-      className="w-full h-full object-cover"
-      poster="https://content3.jdmagicbox.com/comp/vijayawada/89/0866p866std2000089/catalogue/ghar-sansar-governerpet-vijayawada-gift-shops-r9zm63fkbh.jpg"
-    >
-      Your browser does not support the video tag.
-    </video>
-  </div>
-</motion.div>
+            {/* Video */}
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="relative w-full"
+            >
+              <div className="aspect-video rounded-2xl overflow-hidden shadow-2xl">
+                <video
+                  src="/videos/homepagevideo.mp4"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="w-full h-full object-cover"
+                  poster="https://content3.jdmagicbox.com/comp/vijayawada/89/0866p866std2000089/catalogue/ghar-sansar-governerpet-vijayawada-gift-shops-r9zm63fkbh.jpg"
+                >
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>

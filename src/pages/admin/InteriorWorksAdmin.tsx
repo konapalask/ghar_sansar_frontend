@@ -23,7 +23,7 @@ const InteriorWorksAdmin: React.FC = () => {
   // Fetch existing works from backend
   const fetchWorks = async () => {
     try {
-      const res = await axios.get(`${API_UPLOAD}/interor`);
+      const res = await axios.get(`${API_UPLOAD}/interior`);
       const data = res.data;
       const flatWorks: InteriorWork[] = data.categories
         .flatMap((cat: any) =>
@@ -69,12 +69,12 @@ const InteriorWorksAdmin: React.FC = () => {
     if (!work || !window.confirm("Delete this work?")) return;
 
     try {
-      await axios.delete(`${API_UPLOAD}/interor`, {
+      await axios.delete(`${API_UPLOAD}/interior`, {
         params: {
-          category_type: "interor",
+          category_type: "interior",
           category_name: work.category,
           subcategory_name: work.subCategory,
-          image_url: work.id,
+          id: work.id,
         },
       });
       fetchWorks();
@@ -95,7 +95,7 @@ const InteriorWorksAdmin: React.FC = () => {
     try {
       setLoading(true);
       const formData = new FormData();
-      formData.append("category_type", "interor");
+      formData.append("category_type", "interior");
       formData.append("category_name", form.category);
       formData.append("subcategory_name", form.subCategory);
       formData.append("title", form.title);

@@ -11,7 +11,7 @@ interface InteriorWork {
   subCategory: string;
 }
 
-const API_URL = "https://backend.gharsansar.store/api/v1/storage/uploads/interor";
+const API_URL = "https://backend.gharsansar.store/api/v1/storage/uploads/interior";
 
 const InteriorWorks: React.FC = () => {
   const [works, setWorks] = useState<InteriorWork[]>([]);
