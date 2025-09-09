@@ -34,18 +34,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      // 🔹 Replace this with your own API call
-      if (email && password) {
-        const fakeUser: User = {
+      // Only allow exact admin credentials to login
+      if (email === "gharsansarshop@gmail.com" && password === "G8121135980r@") {
+        const adminUser: User = {
           email,
-          role: email.includes("admin") ? "admin" : "user",
+          role: "admin",
           name: email.split("@")[0],
         };
-        setUser(fakeUser);
+        setUser(adminUser);
         setIsAuthenticated(true);
-        localStorage.setItem("user", JSON.stringify(fakeUser));
+        localStorage.setItem("user", JSON.stringify(adminUser));
         return true;
       }
+
+      // Reject all other credentials
+      alert("Invalid email or password. Only admin can login.");
       return false;
     } catch (err) {
       console.error("Login error:", err);
@@ -55,7 +58,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loginWithGoogle = async (): Promise<boolean> => {
     try {
-      // 🔹 Fake Google login
+      // Fake Google login as user role
       const fakeUser: User = {
         email: "googleuser@example.com",
         role: "user",
