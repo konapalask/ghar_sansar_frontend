@@ -152,6 +152,19 @@ const InteriorDesignPage = () => {
       alert("Please fill all required fields");
       return;
     }
+    if (!designForEnquiry) {
+      alert("No design selected for enquiry");
+      return;
+    }
+
+    const message = `Hello, I am ${formName}. I would like to inquire about the design: ${designForEnquiry.name}.
+Property Name: ${formPropertyName || "N/A"}
+Phone: ${formPhone}
+Email: ${formEmail}
+Send WhatsApp updates: ${formWhatsAppUpdates ? "Yes" : "No"}
+Please contact me.`;
+
+    // Save enquiry locally
     const newEnquiry = {
       id: Date.now().toString(),
       name: formName,
@@ -159,14 +172,23 @@ const InteriorDesignPage = () => {
       phone: formPhone,
       propertyName: formPropertyName,
       sendWhatsAppUpdates: formWhatsAppUpdates,
-      subcategory: designForEnquiry?.name || "",
-      image: designForEnquiry?.image || "",
+      subcategory: designForEnquiry.name,
+      image: designForEnquiry.image || "",
       date: new Date().toISOString(),
     };
     const storedEnquiries = JSON.parse(sessionStorage.getItem("enquiries") || "[]");
     storedEnquiries.push(newEnquiry);
     sessionStorage.setItem("enquiries", JSON.stringify(storedEnquiries));
-    alert("Enquiry submitted! Our team will contact you soon.");
+
+    // Open WhatsApp chat with prefilled message for the company's phone number
+    const phone = "918121135980"; // Company's WhatsApp number without '+'
+    const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+
+    window.open(url, "_blank");
+
+    alert("Enquiry submitted! WhatsApp will open for further communication.");
+
+    // Close modal
     handleEnquiryClose();
   }
 
@@ -243,7 +265,7 @@ const InteriorDesignPage = () => {
             ))}
           </section>
 
-          {/* Paginate categories if needed */}
+          {/* Pagination */}
           {paginatedCategories.length > 0 && (
             <nav className="flex justify-center mt-10 space-x-3">
               <button
@@ -264,7 +286,9 @@ const InteriorDesignPage = () => {
                     window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
                   className={`px-4 py-2 rounded border ${
-                    currentPage === page ? "bg-red-600 text-white border-red-600" : "hover:bg-gray-200"
+                    currentPage === page
+                      ? "bg-red-600 text-white border-red-600"
+                      : "hover:bg-gray-200"
                   }`}
                 >
                   {page}
@@ -300,7 +324,8 @@ const InteriorDesignPage = () => {
               <span>Back to Categories</span>
             </button>
             <h2 className="text-2xl font-semibold mb-6">{activeCategory} Designs</h2>
-            {/* Subcategory Grid */}
+
+            {/* Subcategories Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
               {paginatedSubCategories.length > 0 ? (
                 paginatedSubCategories.map((sub, idx) => (
@@ -342,7 +367,7 @@ const InteriorDesignPage = () => {
               )}
             </div>
 
-            {/* Subcategory pagination */}
+            {/* Subcategory Pagination */}
             {subcategories.length > itemsPerPage && (
               <nav className="flex justify-center mt-10 space-x-3">
                 <button
