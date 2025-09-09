@@ -1,4 +1,3 @@
-// src/pages/admin/BlogAdmin.tsx
 import React, { useState } from "react";
 import { useBlogs, Blog } from "../../context/BlogContext";
 import axios from "axios";
@@ -11,7 +10,7 @@ const BlogAdmin: React.FC = () => {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [image, setImage] = useState<File | null>(null);
-  const [videoUrl, setVideoUrl] = useState("");
+  const [video, setVideo] = useState("");
   const [preview, setPreview] = useState<string | null>(null);
 
   const handleFileChange = (file: File) => {
@@ -25,14 +24,14 @@ const BlogAdmin: React.FC = () => {
 
     try {
       await addBlog(
-        { title, description, price: Number(price) || undefined, videoUrl },
+        { title, description, price: Number(price) || undefined, video },
         image || undefined
       );
       setTitle("");
       setDescription("");
       setPrice("");
       setImage(null);
-      setVideoUrl("");
+      setVideo("");
       setPreview(null);
       await refreshBlogs();
     } catch (err) {
@@ -41,6 +40,7 @@ const BlogAdmin: React.FC = () => {
     }
   };
 
+  // ---- FIX: use blog.id (the UUID) for deletion query ----
   const handleDelete = async (blog: Blog) => {
     if (!window.confirm("Are you sure you want to delete this blog?")) return;
 
@@ -48,9 +48,9 @@ const BlogAdmin: React.FC = () => {
       await axios.delete(API_DELETE, {
         params: {
           category_type: "blog",
-          category_name: blog.features?.[0] || "General",
-          subcategory_name: "General",
-          image_url: blog.id, // ensure this matches backend ID / S3 key
+          category_name: blog.features?.[0] || "general",
+          subcategory_name: "general",
+          id: blog.id, // MUST use UUID returned as "id" from backend JSON
         },
       });
       await refreshBlogs();
@@ -61,7 +61,7 @@ const BlogAdmin: React.FC = () => {
   };
 
   const extractYouTubeId = (url: string) => {
-    const match = url.match(/(?:v=|youtu\.be\/)([\w-]+)/);
+    const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:shorts\/|watch\?v=|embed\/|v\/))([a-zA-Z0-9_-]{11})/);
     return match ? match[1] : "";
   };
 
@@ -102,8 +102,8 @@ const BlogAdmin: React.FC = () => {
         <input
           type="text"
           placeholder="YouTube/Instagram URL"
-          value={videoUrl}
-          onChange={(e) => setVideoUrl(e.target.value)}
+          value={video}
+          onChange={(e) => setVideo(e.target.value)}
           className="border p-2 w-full"
         />
         <input
@@ -130,9 +130,8 @@ const BlogAdmin: React.FC = () => {
       <h2 className="text-xl font-semibold">Existing Blogs</h2>
       <ul className="space-y-4">
         {blogs.map((b) => {
-          const isYouTube =
-            b.videoUrl?.includes("youtube") || b.videoUrl?.includes("youtu.be");
-          const isInstagram = b.videoUrl?.includes("instagram.com");
+          const isYouTube = b.video?.includes("youtube") || b.video?.includes("youtu.be");
+          const isInstagram = b.video?.includes("instagram.com");
 
           return (
             <li key={b.id} className="p-4 bg-white rounded shadow space-y-2">
@@ -157,13 +156,11 @@ const BlogAdmin: React.FC = () => {
               )}
 
               {/* YouTube Video */}
-              {b.videoUrl && isYouTube && (
+              {b.video && isYouTube && (
                 <iframe
                   width="320"
                   height="180"
-                  src={`https://www.youtube.com/embed/${extractYouTubeId(
-                    b.videoUrl
-                  )}`}
+                  src={`https://www.youtube.com/embed/${extractYouTubeId(b.video)}`}
                   title="YouTube video"
                   frameBorder="0"
                   allowFullScreen
@@ -172,11 +169,9 @@ const BlogAdmin: React.FC = () => {
               )}
 
               {/* Instagram Video */}
-              {b.videoUrl && isInstagram && (
+              {b.video && isInstagram && (
                 <iframe
-                  src={`https://www.instagram.com/p/${extractInstagramId(
-                    b.videoUrl
-                  )}/embed`}
+                  src={`https://www.instagram.com/p/${extractInstagramId(b.video)}/embed`}
                   width="320"
                   height="400"
                   frameBorder="0"

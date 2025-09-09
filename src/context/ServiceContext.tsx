@@ -3,22 +3,22 @@ import React, { createContext, useContext, useState, ReactNode, useEffect } from
 import axios from "axios";
 
 export interface Service {
-  id: string;
+  id: string;                  // backend id
   title: string;
   description: string;
   price: string | number;
-  actPrice?: number;
-  image: string;
-  category: string;
-  subCategory: string;
+  actual_price?: number;
+  image: string;               // full URL for display
+  category_name: string;
+  subcategory_name: string;
   features?: string[];
 }
 
 interface ServiceContextType {
   services: Service[];
-  addService: (service: Omit<Service, "id">) => Promise<void>;
-  updateService: (id: string, updated: Partial<Service>) => Promise<void>;
-  deleteService: (id: string, service: Service) => Promise<void>;
+  addService: (service: Omit<Service, "id" | "image"> & { image?: File }) => Promise<void>;
+  updateService: (service: Service, updated: Partial<Service>) => Promise<void>;
+  deleteService: (service: Service) => Promise<void>;
   refreshServices: (categoryType?: string) => Promise<void>;
 }
 
@@ -26,11 +26,11 @@ const ServiceContext = createContext<ServiceContextType | undefined>(undefined);
 
 const API_BASE = "https://backend.gharsansar.store/api/v1/storage/uploads";
 
-// ✅ Helper to fix broken URLs
+// ✅ Normalize image URL
 const fixImageUrl = (url: string | undefined) => {
   if (!url) return "";
   return url
-    .replace(/^https?:\/\/https?:\/\//, "https://")
+    .replace(/^https(?!:\/\/)/, "https://")
     .replace(/\s/g, "%20")
     .replace(/([^:]\/)\/+/g, "$1");
 };
@@ -41,47 +41,41 @@ export const useServices = () => {
   return context;
 };
 
-interface Props {
-  children: ReactNode;
-}
-
-export const ServiceProvider: React.FC<Props> = ({ children }) => {
+export const ServiceProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [services, setServices] = useState<Service[]>([]);
 
-  // Fetch services
+  // ✅ Fetch services
   const fetchServices = async (categoryType: string = "services") => {
     try {
-      const url = `${API_BASE}/${categoryType}`;
-      const res = await axios.get(url, { headers: { accept: "application/json" } });
+      const res = await axios.get(`${API_BASE}/${categoryType}`, {
+        headers: { accept: "application/json" },
+      });
       const json = res.data;
       const allServices: Service[] = [];
 
-      if (json?.categories && Array.isArray(json.categories)) {
-        json.categories.forEach((category: any) => {
-          if (category.subcategories && Array.isArray(category.subcategories)) {
-            category.subcategories.forEach((sub: any) => {
-              if (sub.images && Array.isArray(sub.images)) {
-                sub.images.forEach((img: any, index: number) => {
-                  allServices.push({
-                    id: `${category.name}-${sub.name}-${img.name || index}`,
-                    title: img.title || "Untitled Service",
-                    description: img.description || "No description",
-                    price: img.price || "Custom Pricing",
-                    actPrice: img.actual_price || 0,
-                    image: fixImageUrl(img.image),
-                    category: category.name,
-                    subCategory: sub.name,
-                    features: img.features,
-                  });
-                });
-              }
+      if (json?.categories) {
+        json.categories.forEach((cat: any) => {
+          cat.subcategories?.forEach((sub: any) => {
+            sub.images?.forEach((img: any) => {
+              allServices.push({
+                id: img.id || img.name || img.image,
+                title: img.title || "Untitled",
+                description: img.description || "No description",
+                price: img.price || "Custom Pricing",
+                actual_price: img.actual_price || 0,
+                image: fixImageUrl(img.image),
+                category_name: cat.name,
+                subcategory_name: sub.name,
+                features: img.features || [],
+              });
             });
-          }
+          });
         });
       }
+
       setServices(allServices);
     } catch (err) {
-      console.error("Error fetching services:", err);
+      console.error("❌ Error fetching services:", err);
     }
   };
 
@@ -89,57 +83,55 @@ export const ServiceProvider: React.FC<Props> = ({ children }) => {
     fetchServices();
   }, []);
 
-  // Add service
-  const addService = async (service: Omit<Service, "id">) => {
+  // ✅ Add service
+  const addService = async (
+    service: Omit<Service, "id" | "image"> & { image?: File }
+  ) => {
     try {
       const formData = new FormData();
       formData.append("category_type", "services");
-      formData.append("category_name", service.category || "general");
-      formData.append("subcategory_name", service.subCategory || "general");
+      formData.append("category_name", service.category_name);
+      formData.append("subcategory_name", service.subcategory_name);
       formData.append("title", service.title);
       formData.append("description", service.description);
-      formData.append("price", service.price?.toString() || "Custom Pricing");
 
-      if (service.features) {
-        service.features.forEach((f) => formData.append("features", f));
+      // ✅ Force integer conversion
+      formData.append("price", parseInt(service.price.toString(), 10).toString());
+      if (service.actual_price !== undefined) {
+        formData.append("actual_price", parseInt(service.actual_price.toString(), 10).toString());
       }
 
-      if (service.image && typeof service.image !== "string") {
-        const file = service.image as unknown as File;
-        const safeFileName = file.name.replace(/\s/g, "-");
-        formData.append("image", file, safeFileName);
+      service.features?.forEach((f) => formData.append("features", f));
+      if (service.image) {
+        formData.append("image", service.image, service.image.name.replace(/\s/g, "-"));
       }
 
-      const res = await axios.post(`${API_BASE}`, formData);
-      if (res.status !== 200 && res.status !== 201) {
-        throw new Error(`HTTP error! Status: ${res.status}`);
-      }
-
+      await axios.post(`${API_BASE}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       await fetchServices();
     } catch (err) {
       console.error("❌ Error adding service:", err);
-      alert("Failed to add service. Check console.");
     }
   };
 
-  // Update service metadata
-  const updateService = async (id: string, updated: Partial<Service>) => {
+  // ✅ Update service
+  const updateService = async (service: Service, updated: Partial<Service>) => {
     try {
-      const service = services.find((s) => s.id === id);
-      if (!service) throw new Error("Service not found");
-
       const payload = new URLSearchParams();
-      payload.append("category_name", service.category);
-      payload.append("subcategory_name", service.subCategory);
-      payload.append("id", service._id); // backend requires existing image key
+      payload.append("category_name", service.category_name);
+      payload.append("subcategory_name", service.subcategory_name);
+      payload.append("id", service.id);
 
       if (updated.title) payload.append("title", updated.title);
       if (updated.description) payload.append("description", updated.description);
-      if (updated.price) payload.append("price", updated.price.toString());
-      if (updated.actPrice !== undefined) payload.append("actual_price", updated.actPrice.toString());
-      if (updated.features) {
-        updated.features.forEach((f) => payload.append("features", f));
+      if (updated.price !== undefined) {
+        payload.append("price", parseInt(updated.price.toString(), 10).toString());
       }
+      if (updated.actual_price !== undefined) {
+        payload.append("actual_price", parseInt(updated.actual_price.toString(), 10).toString());
+      }
+      updated.features?.forEach((f) => payload.append("features", f));
 
       await axios.put(`${API_BASE}/services`, payload, {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -148,43 +140,22 @@ export const ServiceProvider: React.FC<Props> = ({ children }) => {
       await fetchServices();
     } catch (err) {
       console.error("❌ Error updating service:", err);
-      alert("Failed to update service. Check console.");
     }
   };
 
-  // Delete service
-  const deleteService = async (id: string, service: Service) => {
+  // ✅ Delete service
+  const deleteService = async (service: Service) => {
     try {
-      if (!service.category || !service.subCategory || !service.image) {
-        console.error("❌ Missing required fields for delete:", service);
-        return;
-      }
-
-      // Extract last 3 segments: category/subcategory/filename.webp
-      const parts = service.image.split("/");
-      const relativePath = parts.slice(-3).join("/");
-
       const params = new URLSearchParams({
-        category_name: service.category,
-        subcategory_name: service.subCategory,
-        image_url: relativePath,
+        category_name: service.category_name,
+        subcategory_name: service.subcategory_name,
+        id: service.id,
       });
 
-      console.log("Deleting service:", params.toString());
-
-      const res = await axios.delete(`${API_BASE}/services?${params.toString()}`, {
-        headers: { accept: "application/json" },
-      });
-
-      if (res.status !== 200) {
-        throw new Error(`Failed to delete service: ${res.status}`);
-      }
-
-      setServices((prev) => prev.filter((s) => s.id !== id));
-      console.log("✅ Service deleted:", service.title);
+      await axios.delete(`${API_BASE}/services?${params.toString()}`);
+      setServices((prev) => prev.filter((s) => s.id !== service.id));
     } catch (err) {
-      console.error("❌ Delete failed:", err);
-      alert("Failed to delete service. Check console.");
+      console.error("❌ Error deleting service:", err);
     }
   };
 
