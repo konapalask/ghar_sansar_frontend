@@ -442,7 +442,7 @@ Please contact me.`;
               <h3 className="font-semibold text-lg mb-2">Contact for this Design</h3>
               <p><strong>Phone 1:</strong> +91 81211 35980</p>
               <p><strong>Phone 2:</strong> +91 92483 44434</p>
-              <p><strong>Email:</strong> <a href="mailto:gharsansar@gmail.com" className="text-red-600 underline">gharsansar@gmail.com</a></p>
+              <p><strong>Email:</strong> <a href="mailto:gharsansarshop@gmail.com" className="text-red-600 underline">gharsansarshop@gmail.com</a></p>
               <p><strong>Address:</strong> 27-14-60, Rajagopalachari St, near Buckinghampet Post Office, Governor Peta, Vijayawada, Andhra Pradesh 520002.</p>
             </div>
           </div>
