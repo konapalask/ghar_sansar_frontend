@@ -5,7 +5,7 @@ import axios from "axios";
 
 const itemsPerPage = 12;
 const placeholderImage = "/images/placeholder.jpg";
-const API_URL = "https://backend.gharsansar.store/api/v1/storage/uploads/interor";
+const API_URL = "https://backend.gharsansar.store/api/v1/storage/uploads/interior";
 
 // Interfaces
 interface Subcategory {
@@ -15,7 +15,7 @@ interface Subcategory {
 }
 interface Category {
   name: string;
-  image?: string;
+  image?: string; // will be first subcategory image
   features?: string[];
   subcategories: Subcategory[];
 }
@@ -50,17 +50,21 @@ const InteriorDesignPage = () => {
       try {
         const res = await axios.get(API_URL);
         const data = res.data;
-        // Normalize backend data
-        const apiCategories: Category[] = data.categories.map((cat: any) => ({
-          name: cat.name,
-          image: cat.image || "", // optional, assign default if needed
-          features: cat.features || [],
-          subcategories: (cat.subcategories || []).map((sub: any) => ({
+        // Normalize backend data, assign category image as first subcategory image
+        const apiCategories: Category[] = data.categories.map((cat: any) => {
+          const subcategories: Subcategory[] = (cat.subcategories || []).map((sub: any) => ({
             name: sub.name,
             image: sub.images?.[0]?.image,
             video: sub.images?.[0]?.video,
-          })),
-        }));
+          }));
+
+          return {
+            name: cat.name,
+            image: subcategories.length > 0 ? subcategories[0].image || "" : "",
+            features: cat.features || [],
+            subcategories,
+          };
+        });
         setCategories(apiCategories);
       } catch (err) {
         console.error("Failed to fetch categories:", err);
@@ -72,7 +76,7 @@ const InteriorDesignPage = () => {
     fetchCategories();
   }, []);
 
-  // URL category param
+  // URL category param effect
   useEffect(() => {
     if (urlCategory && categories.length) {
       const match = categories.find(
@@ -126,6 +130,7 @@ const InteriorDesignPage = () => {
     setActiveDesign(null);
     setDesignForEnquiry(null);
   }
+
   function handleEnquiryOpen(subcategory: Subcategory) {
     setDesignForEnquiry(subcategory);
     setBookingOpen(true);
@@ -135,10 +140,12 @@ const InteriorDesignPage = () => {
     setFormPropertyName("");
     setFormWhatsAppUpdates(false);
   }
+
   function handleEnquiryClose() {
     setBookingOpen(false);
     setDesignForEnquiry(null);
   }
+
   function handleEnquirySubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!formName || !formEmail || !formPhone) {
@@ -334,6 +341,7 @@ const InteriorDesignPage = () => {
                 <p className="text-center w-full py-14 text-gray-500">No designs available.</p>
               )}
             </div>
+
             {/* Subcategory pagination */}
             {subcategories.length > itemsPerPage && (
               <nav className="flex justify-center mt-10 space-x-3">
