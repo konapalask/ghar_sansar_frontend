@@ -23,7 +23,7 @@ import InteriorWorks from "./pages/InteriorWorks";
 
 // ✅ Admin pages
 import AdminLayout from "./pages/admin/AdminLayout";
-import AdminEnquiryList from "./pages/admin/AdminEnquiryList";
+// import AdminEnquiryList from "./pages/admin/AdminEnquiryList";
 import BlogAdmin from "./pages/admin/BlogAdmin";
 import ServicesAdmin from "./pages/admin/ServicesAdmin";
 import ProductsAdmin from "./pages/admin/ProductsAdmin";
@@ -90,7 +90,7 @@ export default function App() {
                           }
                         >
                           <Route path="blog-admin" element={<BlogAdmin />} />
-                          <Route path="enquiries" element={<AdminEnquiryList />} />
+                          {/* <Route path="enquiries" element={<AdminEnquiryList />} /> */}
                           <Route path="services-admin" element={<ServicesAdmin />} />
                           <Route path="products-admin" element={<ProductsAdmin />} />
                           <Route path="products-bulk" element={<ProductAdminBulk />} />
