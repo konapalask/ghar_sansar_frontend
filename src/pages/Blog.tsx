@@ -113,23 +113,32 @@ const Blog: React.FC = () => {
         </div>
         {/* Header with Subscribe */}
         <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-3">
-            <div className="w-14 h-14 rounded-full bg-red-100 border border-gray-200 flex items-center justify-center text-3xl font-bold text-white shadow">
-              <span className="bg-red-500 w-12 h-12 flex items-center justify-center rounded-full text-white">G</span>
-            </div>
-            <div>
-              <div className="font-bold text-2xl text-gray-900">ghar_sansar</div>
-              <div className="text-sm text-gray-500">Latest on our Social</div>
-            </div>
-          </div>
-          <button
-            className="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded text-base font-semibold shadow"
-            onClick={handleSubscribe}
-          >
-            Subscribe
-          </button>
-        </div>
+          <div className="flex items-center mb-6 space-x-3">
+  {/* Logo Avatar */}
+  <div className="w-24 h-24 rounded-full border border-gray-200 flex items-center justify-center shadow overflow-hidden bg-white">
+  <img
+    src="/images/logo.png"
+    alt="Ghar sansar Logo"
+    className="w-full h-40 object-cover"
+    draggable={false}
+  />
+</div>
 
+  {/* Brand Name and Subtitle */}
+  <div>
+    <div className="font-bold text-2xl text-gray-900 flex items-center space-x-2">
+      <span>Ghar sansar</span>
+      <button
+        className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded text-base font-semibold shadow ml-2"
+        onClick={handleSubscribe}
+      >
+        Subscribe
+      </button>
+    </div>
+    <div className="text-sm text-gray-500">Latest on our Social</div>
+  </div>
+</div>
+        </div>
         {/* Video Reel (all autoplay, loop, no controls, no description) */}
         {videoPosts.length > 0 && (
           <div className="flex space-x-8 overflow-x-auto pb-8 hide-scrollbar">
