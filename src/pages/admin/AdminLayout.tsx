@@ -40,12 +40,12 @@ export default function AdminLayout() {
               <Hammer size={18} /> Interior Works
             </Link>
             {/* NEW: Enquiry Details Sidebar Link */}
-            <Link
+            {/* <Link
               to="/admin/enquiries"
               className="flex items-center gap-2 px-4 py-2 rounded hover:bg-gray-700 transition"
             >
               <Mail size={18} /> Enquiry Details
-            </Link>
+            </Link> */}
           </nav>
         </div>
       </aside>
