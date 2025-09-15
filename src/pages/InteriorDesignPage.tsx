@@ -7,7 +7,6 @@ const itemsPerPage = 12;
 const placeholderImage = "/images/placeholder.jpg";
 const API_URL = "https://backend.gharsansar.store/api/v1/storage/uploads/interior";
 
-// Interfaces
 interface Subcategory {
   name: string;
   image?: string;
@@ -15,7 +14,7 @@ interface Subcategory {
 }
 interface Category {
   name: string;
-  image?: string; // will be first subcategory image
+  image?: string;
   features?: string[];
   subcategories: Subcategory[];
 }
@@ -37,6 +36,9 @@ const InteriorDesignPage = () => {
   const [activeDesign, setActiveDesign] = useState<Subcategory | null>(null);
   const [designForEnquiry, setDesignForEnquiry] = useState<Subcategory | null>(null);
 
+  // Remember page per category
+  const [pageState, setPageState] = useState<{ [key: string]: number }>({});
+
   // Form state
   const [formName, setFormName] = useState("");
   const [formEmail, setFormEmail] = useState("");
@@ -50,7 +52,6 @@ const InteriorDesignPage = () => {
       try {
         const res = await axios.get(API_URL);
         const data = res.data;
-        // Normalize backend data, assign category image as first subcategory image
         const apiCategories: Category[] = data.categories.map((cat: any) => {
           const subcategories: Subcategory[] = (cat.subcategories || []).map((sub: any) => ({
             name: sub.name,
@@ -89,6 +90,13 @@ const InteriorDesignPage = () => {
     }
   }, [urlCategory, categories]);
 
+  // Save page state when changing category
+  useEffect(() => {
+    if (activeCategory) {
+      setPageState((prev) => ({ ...prev, [activeCategory]: currentPage }));
+    }
+  }, [activeCategory, currentPage]);
+
   // Search/filter logic
   const filteredCategories = useMemo(() => {
     let filtered = categories;
@@ -125,7 +133,7 @@ const InteriorDesignPage = () => {
   function onSelectCategory(catName: string) {
     setActiveCategory(catName);
     setSelectedCategory(catName);
-    setCurrentPage(1);
+    setCurrentPage(pageState[catName] || 1);
     setSubCatPage(1);
     setActiveDesign(null);
     setDesignForEnquiry(null);
@@ -164,7 +172,6 @@ Email: ${formEmail}
 Send WhatsApp updates: ${formWhatsAppUpdates ? "Yes" : "No"}
 Please contact me.`;
 
-    // Save enquiry locally
     const newEnquiry = {
       id: Date.now().toString(),
       name: formName,
@@ -180,17 +187,31 @@ Please contact me.`;
     storedEnquiries.push(newEnquiry);
     sessionStorage.setItem("enquiries", JSON.stringify(storedEnquiries));
 
-    // Open WhatsApp chat with prefilled message for the company's phone number
-    const phone = "918121135980"; // Company's WhatsApp number without '+'
+    const phone = "918121135980"; // WhatsApp number
     const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 
     window.open(url, "_blank");
-
     alert("Enquiry submitted! WhatsApp will open for further communication.");
-
-    // Close modal
     handleEnquiryClose();
   }
+
+  // NEW: Restore last known page when returning to categories (Back button)
+  function handleBackToCategories() {
+    setActiveCategory(null);
+    setSelectedCategory("All Categories");
+    // Restore last category page if available
+    const lastPage = pageState["All Categories"] || currentPage;
+    setCurrentPage(lastPage);
+    setSubCatPage(1);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  // Save current page state whenever changing pages in Categories view
+  useEffect(() => {
+    if (!activeCategory) {
+      setPageState((prev) => ({ ...prev, ["All Categories"]: currentPage }));
+    }
+  }, [activeCategory, currentPage]);
 
   // Loading/error screens
   if (loading) return <div className="p-6 text-gray-500">Loading interior designs...</div>;
@@ -223,11 +244,10 @@ Please contact me.`;
             value={selectedCategory}
             onChange={(e) => {
               setSelectedCategory(e.target.value);
-              setCurrentPage(1);
               if (e.target.value === "All Categories") {
                 setActiveCategory(null);
               } else {
-                setActiveCategory(e.target.value);
+                onSelectCategory(e.target.value);
               }
             }}
           >
@@ -312,13 +332,7 @@ Please contact me.`;
           <section className="max-w-7xl mx-auto">
             <button
               className="mb-6 inline-flex items-center px-5 py-2 bg-white border border-red-500 text-red-600 rounded shadow hover:bg-red-50 transition font-medium text-base gap-2"
-              onClick={() => {
-                setActiveCategory(null);
-                setSelectedCategory("All Categories");
-                setCurrentPage(1);
-                setSubCatPage(1);
-                window.scrollTo({ top: 0, behavior: "smooth" });
-              }}
+              onClick={handleBackToCategories}
             >
               <span className="text-xl">←</span>
               <span>Back to Categories</span>
@@ -343,9 +357,7 @@ Please contact me.`;
                         poster={sub.image || placeholderImage}
                         className="w-full h-64 object-cover hover:scale-105 transition-transform bg-gray-100 cursor-pointer"
                         onClick={() => setActiveDesign(sub)}
-                      >
-                        Your browser does not support the video tag.
-                      </video>
+                      />
                     ) : (
                       <img
                         src={sub.image || placeholderImage}
@@ -388,7 +400,9 @@ Please contact me.`;
                       window.scrollTo({ top: 0, behavior: "smooth" });
                     }}
                     className={`px-4 py-2 rounded border ${
-                      subCatPage === page ? "bg-red-600 text-white border-red-600" : "hover:bg-gray-200"
+                      subCatPage === page
+                        ? "bg-red-600 text-white border-red-600"
+                        : "hover:bg-gray-200"
                     }`}
                   >
                     {page}
@@ -438,13 +452,18 @@ Please contact me.`;
                 className="w-full h-[400px] object-cover mb-4 rounded mx-auto"
               />
             )}
-            <div>
-              <h3 className="font-semibold text-lg mb-2">Contact for this Design</h3>
-              <p><strong>Phone 1:</strong> +91 81211 35980</p>
-              <p><strong>Phone 2:</strong> +91 92483 44434</p>
-              <p><strong>Email:</strong> <a href="mailto:gharsansarshop@gmail.com" className="text-red-600 underline">gharsansarshop@gmail.com</a></p>
-              <p><strong>Address:</strong> 27-14-60, Rajagopalachari St, near Buckinghampet Post Office, Governor Peta, Vijayawada, Andhra Pradesh 520002.</p>
-            </div>
+           <div>
+  <h3 className="font-semibold text-lg mb-2">Contact for this Design</h3>
+  <p><strong>Phone 1:</strong> <a href="tel:+918121135980" className="text-blue-600 underline">+91 81211 35980</a></p>
+  <p><strong>Phone 2:</strong> <a href="tel:+919248344434" className="text-blue-600 underline">+91 92483 44434</a></p>
+  <p><strong>Phone 3:</strong> <a href="tel:+919100322379" className="text-blue-600 underline">+91 91003 22379</a></p>
+  <p><strong>Phone 4:</strong> <a href="tel:+919440293980" className="text-blue-600 underline">+91 94402 93980</a></p>
+  <p><strong>Phone 5:</strong> <a href="tel:+919542088164" className="text-blue-600 underline">+91 95420 88164</a></p>
+  
+  <p><strong>Email:</strong> <a href="mailto:gharsansarshop@gmail.com" className="text-red-600 underline">gharsansarshop@gmail.com</a></p>
+  <p><strong>Address:</strong> 27-14-60, Rajagopalachari St, near Buckinghampet Post Office, Governor Peta, Vijayawada, Andhra Pradesh 520002.</p>
+</div>
+
           </div>
         </div>
       )}
@@ -461,67 +480,62 @@ Please contact me.`;
               ×
             </button>
             <h2 className="text-xl font-semibold mb-4">Book an Enquiry</h2>
-            {designForEnquiry && (
-              <div className="mb-4 bg-gray-50 p-2 rounded">
-                <img
-                  src={designForEnquiry.image || placeholderImage}
-                  alt={designForEnquiry.name}
-                  className="w-full h-32 object-cover mb-2 rounded"
-                />
-                <p className="font-semibold text-center">{designForEnquiry.name}</p>
-              </div>
-            )}
             <form onSubmit={handleEnquirySubmit} className="space-y-4">
-              <input
-                type="text"
-                placeholder="Name"
-                required
-                value={formName}
-                onChange={(e) => setFormName(e.target.value)}
-                className="w-full p-2 border rounded"
-              />
-              <input
-                type="email"
-                placeholder="Email"
-                required
-                value={formEmail}
-                onChange={(e) => setFormEmail(e.target.value)}
-                className="w-full p-2 border rounded"
-              />
-              <input
-                type="tel"
-                placeholder="Phone"
-                required
-                value={formPhone}
-                onChange={(e) => setFormPhone(e.target.value)}
-                className="w-full p-2 border rounded"
-              />
-              <label className="flex items-center space-x-2">
+              <div>
+                <label className="block text-sm mb-1">Name *</label>
+                <input
+                  type="text"
+                  value={formName}
+                  onChange={(e) => setFormName(e.target.value)}
+                  required
+                  className="w-full border rounded px-3 py-2"
+                />
+              </div>
+              <div>
+                <label className="block text-sm mb-1">Email *</label>
+                <input
+                  type="email"
+                  value={formEmail}
+                  onChange={(e) => setFormEmail(e.target.value)}
+                  required
+                  className="w-full border rounded px-3 py-2"
+                />
+              </div>
+              <div>
+                <label className="block text-sm mb-1">Phone *</label>
+                <input
+                  type="tel"
+                  value={formPhone}
+                  onChange={(e) => setFormPhone(e.target.value)}
+                  required
+                  className="w-full border rounded px-3 py-2"
+                />
+              </div>
+              <div>
+                <label className="block text-sm mb-1">Property Name</label>
+                <input
+                  type="text"
+                  value={formPropertyName}
+                  onChange={(e) => setFormPropertyName(e.target.value)}
+                  className="w-full border rounded px-3 py-2"
+                />
+              </div>
+              <div className="flex items-center">
                 <input
                   type="checkbox"
+                  id="whatsapp"
                   checked={formWhatsAppUpdates}
                   onChange={(e) => setFormWhatsAppUpdates(e.target.checked)}
+                  className="mr-2"
                 />
-                <span>Send me updates on WhatsApp</span>
-              </label>
-              <input
-                type="text"
-                placeholder="Property Name"
-                value={formPropertyName}
-                onChange={(e) => setFormPropertyName(e.target.value)}
-                className="w-full p-2 border rounded"
-              />
+                <label htmlFor="whatsapp">Send WhatsApp updates</label>
+              </div>
               <button
                 type="submit"
-                className="w-full py-3 bg-red-500 text-white rounded hover:bg-red-600"
+                className="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600"
               >
-                BOOK ENQUIRY
+                Submit Enquiry
               </button>
-              <p className="mt-4 text-center text-xs text-gray-500">
-                By submitting you agree to our{" "}
-                <a href="#" className="underline text-red-600">privacy policy</a> &amp;{" "}
-                <a href="#" className="underline text-red-600">terms and conditions</a>.
-              </p>
             </form>
           </div>
         </div>

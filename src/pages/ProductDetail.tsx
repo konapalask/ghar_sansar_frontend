@@ -1,18 +1,29 @@
 // src/pages/ProductDetail.tsx
-import React from "react";
+import React, { useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Phone, MessageCircle, MapPinIcon, ChevronLeft, ArrowLeft } from "lucide-react";
+import { useProducts } from "../context/ProductContext";
 
 const ProductDetail: React.FC = () => {
-  const { state: product } = useLocation();
+  const location = useLocation();
   const navigate = useNavigate();
+
+  // Product id from URL
+  const { pathname, search, state } = location;
+  const id = decodeURIComponent(pathname.split("/").pop() || "");
+  const { products } = useProducts();
+
+  // Prefer router state, else lookup from context
+  const product = state || useMemo(() =>
+    products.find((p) => p.id === id), [id, products]
+  );
 
   if (!product) {
     return (
       <div className="p-6 text-center">
         <p>Product not found.</p>
         <button
-          onClick={() => navigate("/products")}
+          onClick={() => navigate(`/products${search}`)}
           className="mt-6 flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold rounded-xl shadow-md hover:from-blue-700 hover:to-blue-600 transition-all duration-300 transform hover:-translate-y-0.5 hover:scale-105 hover:shadow-lg"
         >
           <ArrowLeft size={18} /> Go Back to Products
@@ -34,20 +45,20 @@ const ProductDetail: React.FC = () => {
       {/* Product Image */}
       <img
         src={product.image}
-        alt={product.name}
+        alt={product.name || product.title}
         className="w-full max-h-[70vh] object-contain rounded-xl shadow-lg transition-transform duration-500 hover:scale-[1.02]"
       />
 
       {/* Product Name */}
       <h1 className="text-4xl font-extrabold mt-6 tracking-tight text-gray-900">
-        {product.name}
+        {product.name || product.title}
       </h1>
 
       {/* Product Description */}
       <div
         className="relative mt-6 p-6 bg-gradient-to-r from-gray-50 to-gray-100 
-                   rounded-xl shadow-inner border-l-4 border-blue-500 
-                   animate-fadeIn"
+                    rounded-xl shadow-inner border-l-4 border-blue-500 
+                    animate-fadeIn"
       >
         <p className="text-lg leading-relaxed font-serif text-gray-800 italic">
           {product.description}
@@ -66,7 +77,7 @@ const ProductDetail: React.FC = () => {
 
         {/* WhatsApp */}
         <a
-          href={`https://wa.me/918121135980?text=I'm interested in ${product.name}`}
+          href={`https://wa.me/918121135980?text=I'm interested in ${product.name || product.title}`}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition"
@@ -87,4 +98,3 @@ const ProductDetail: React.FC = () => {
 };
 
 export default ProductDetail;
-  

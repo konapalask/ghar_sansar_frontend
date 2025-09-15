@@ -1,5 +1,4 @@
-// src/components/ProductCard.tsx
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 
 interface ProductCardProps {
   product: {
@@ -14,13 +13,24 @@ interface ProductCardProps {
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const [showDescription, setShowDescription] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
 
-  console.log("🛠 ProductCard received:", product); // 👀 Debug
+  console.log("🛠 ProductCard received:", product);
+
+  const handleToggleDescription = () => {
+    setShowDescription(!showDescription);
+    if (cardRef.current) {
+      const yOffset = -80; // Adjust this to your fixed navbar height in pixels
+      const y = cardRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: y, behavior: "smooth" });
+    }
+  };
 
   return (
     <div
+      ref={cardRef}
       className="cursor-pointer w-full bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition"
-      onClick={() => setShowDescription(!showDescription)}
+      onClick={handleToggleDescription}
     >
       <img
         src={product.image}

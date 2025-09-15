@@ -12,7 +12,7 @@ const Home: React.FC = () => {
     {
       icon: Truck,
       title: "Free Shipping",
-      description: "Free delivery on orders over ₹500",
+      description: "Free delivery on orders over ₹1500",
     },
     {
       icon: Shield,
