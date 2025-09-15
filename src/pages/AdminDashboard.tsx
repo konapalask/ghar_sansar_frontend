@@ -12,8 +12,8 @@ const stats = [
 
 const AdminDashboard: React.FC = () => {
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">Admin Dashboard</h1>
+    <div className="p-4 sm:p-6 max-w-screen-lg mx-auto">
+      <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-6">Admin Dashboard</h1>
       <p className="mb-8 text-gray-600">
         Welcome to the control panel. Use the quick links below to manage content.
       </p>
@@ -25,7 +25,7 @@ const AdminDashboard: React.FC = () => {
             <Link
               key={item.name}
               to={item.link}
-              className="flex items-center gap-4 p-6 bg-white rounded-2xl shadow hover:shadow-lg transition"
+              className="flex flex-wrap items-center gap-4 p-6 bg-white rounded-2xl shadow hover:shadow-lg transition"
             >
               <div
                 className={`p-3 rounded-xl text-white ${item.color} flex items-center justify-center`}
