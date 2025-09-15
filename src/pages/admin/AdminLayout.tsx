@@ -1,11 +1,11 @@
 import { Outlet, Link } from "react-router-dom";
-import { LayoutDashboard, Package, Settings, PenBox, Hammer, Mail } from "lucide-react"; // <-- Import Mail icon
+import { LayoutDashboard, Package, Settings, PenBox, Hammer, Mail } from "lucide-react";
 
 export default function AdminLayout() {
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen flex-col sm:flex-row">
       {/* Sidebar */}
-      <aside className="w-64 bg-gray-900 text-white flex flex-col p-0">
+      <aside className="w-full sm:w-64 bg-gray-900 text-white flex flex-col p-0">
         <div className="p-6 flex-1">
           <h2 className="text-xl font-bold mb-6">Admin Panel</h2>
           <nav className="space-y-3">
@@ -39,21 +39,21 @@ export default function AdminLayout() {
             >
               <Hammer size={18} /> Interior Works
             </Link>
-            {/* NEW: Enquiry Details Sidebar Link */}
+            {/* Uncomment to add Enquiries link */}
             {/* <Link
               to="/admin/enquiries"
               className="flex items-center gap-2 px-4 py-2 rounded hover:bg-gray-700 transition"
             >
-              <Mail size={18} /> Enquiry Details
+              <Mail size={18} /> Enquiries
             </Link> */}
           </nav>
         </div>
       </aside>
 
-      {/* Main Content Area with Transparent Watermark Logo */}
-      <main className="flex-1 p-8 bg-gray-50 relative overflow-hidden">
+      {/* Main Content Area */}
+      <main className="flex-1 p-4 sm:p-8 bg-gray-50 relative overflow-hidden">
         {/* Watermark Logo */}
-        <div className="pointer-events-none fixed left-64 top-0 bottom-0 flex justify-center items-center w-[calc(100vw-16rem)] h-screen z-0">
+        <div className="pointer-events-none fixed sm:left-64 left-0 top-0 bottom-0 flex justify-center items-center w-full sm:w-[calc(100vw-16rem)] h-screen z-0">
           <img
             src="/ghar sansar logo.svg"
             alt="Ghar Sansar Logo Watermark"
@@ -65,7 +65,7 @@ export default function AdminLayout() {
             }}
           />
         </div>
-        {/* Regular content goes here, will be above the watermark */}
+        {/* Content */}
         <div className="relative z-10">
           <Outlet />
         </div>
