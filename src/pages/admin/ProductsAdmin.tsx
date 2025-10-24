@@ -29,7 +29,7 @@ const fixImageUrl = (url: string | File) => {
 };
 
 const ProductsAdmin: React.FC = () => {
-  const API_BASE = import.meta.env.VITE_AWS_API_URL || "https://backend.gharsansar.store/api/v1";
+  const API_BASE = import.meta.env.VITE_AWS_API_URL || "https://lx70r6zsef.execute-api.ap-south-1.amazonaws.com/prod/api";
 
   const [products, setProducts] = useState<Product[]>([]);
   const [categoriesData, setCategoriesData] = useState<Category[]>([]);

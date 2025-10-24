@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const API_URL = "https://backend.gharsansar.store/api/v1/storage/uploads/blog";
+const API_URL = "https://lx70r6zsef.execute-api.ap-south-1.amazonaws.com/prod/api/storage/upload/blog";
 const YOUTUBE_LINK = "https://www.youtube.com/@gharsansar_shop";
 
 const sanitizeUrl = (url?: string) => {
@@ -40,15 +40,13 @@ const Blog: React.FC = () => {
     fetch(API_URL)
       .then((res) => res.json())
       .then((data) => {
-        const allImages = data.categories
-          ? data.categories.flatMap((cat: any) =>
-              cat.subcategories.flatMap((sub: any) => sub.images)
-            )
-          : data;
-        const blogItems: BlogItem[] = allImages.map((item: BlogItem) => ({
-          ...item,
-          image: sanitizeUrl(item.image),
+        // Map over data.data since the API returns { status, data: [...] }
+        const blogItems: BlogItem[] = data.data.map((item: any) => ({
+          id: item.id,
+          title: item.title,
+          description: item.description,
           video: sanitizeUrl(item.video),
+          image: undefined, // No image field in this data structure, or you can add a placeholder
         }));
         setBlogs(blogItems);
         setLoading(false);
@@ -58,6 +56,7 @@ const Blog: React.FC = () => {
         setLoading(false);
       });
   }, []);
+
 
   const videoPosts = blogs.filter(
     (p) =>

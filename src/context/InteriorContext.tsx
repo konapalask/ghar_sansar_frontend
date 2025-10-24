@@ -27,7 +27,7 @@ export const useInterior = () => {
   return context;
 };
 
-const API_URL = "https://backend.gharsansar.store/api/v1/storage/uploads/interior";
+const API_URL = "https://lx70r6zsef.execute-api.ap-south-1.amazonaws.com/prod/api/storage/uploads/interior";
 
 // Sanitize URLs
 const sanitizeUrl = (url?: string) => {

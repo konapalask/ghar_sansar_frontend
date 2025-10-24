@@ -37,7 +37,7 @@ const fixImageUrl = (url: string) => {
 
 export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>([]);
-  const API_BASE = import.meta.env.VITE_AWS_API_URL || "https://backend.gharsansar.store/api/v1";
+  const API_BASE = import.meta.env.VITE_AWS_API_URL || "https://lx70r6zsef.execute-api.ap-south-1.amazonaws.com/prod/api";
 
   // Fetch all products from backend
   const fetchProducts = async () => {

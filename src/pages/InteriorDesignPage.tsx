@@ -5,7 +5,7 @@ import axios from "axios";
 
 const itemsPerPage = 12;
 const placeholderImage = "/images/placeholder.jpg";
-const API_URL = "https://backend.gharsansar.store/api/v1/storage/uploads/interior";
+const API_URL = "https://lx70r6zsef.execute-api.ap-south-1.amazonaws.com/prod/api/storage/upload/interior";
 
 interface Subcategory {
   name: string;
@@ -47,35 +47,69 @@ const InteriorDesignPage = () => {
   const [formWhatsAppUpdates, setFormWhatsAppUpdates] = useState(false);
 
   // Fetch categories from backend on mount
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await axios.get(API_URL);
-        const data = res.data;
-        const apiCategories: Category[] = data.categories.map((cat: any) => {
-          const subcategories: Subcategory[] = (cat.subcategories || []).map((sub: any) => ({
-            name: sub.name,
-            image: sub.images?.[0]?.image,
-            video: sub.images?.[0]?.video,
-          }));
+  // useEffect(() => {
+  //   const fetchCategories = async () => {
+  //     try {
+  //       const res = await axios.get(API_URL);
+  //       const data = res.data;
+  //       const apiCategories: Category[] = data.categories.map((cat: any) => {
+  //         const subcategories: Subcategory[] = (cat.subcategories || []).map((sub: any) => ({
+  //           name: sub.name,
+  //           image: sub.images?.[0]?.image,
+  //           video: sub.images?.[0]?.video,
+  //         }));
 
-          return {
-            name: cat.name,
-            image: subcategories.length > 0 ? subcategories[0].image || "" : "",
-            features: cat.features || [],
-            subcategories,
-          };
-        });
-        setCategories(apiCategories);
-      } catch (err) {
-        console.error("Failed to fetch categories:", err);
-        setCategories([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCategories();
-  }, []);
+  //         return {
+  //           name: cat.name,
+  //           image: subcategories.length > 0 ? subcategories[0].image || "" : "",
+  //           features: cat.features || [],
+  //           subcategories,
+  //         };
+  //       });
+  //       setCategories(apiCategories);
+  //     } catch (err) {
+  //       console.error("Failed to fetch categories:", err);
+  //       setCategories([]);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   fetchCategories();
+  // }, []);
+
+
+  useEffect(() => {
+  const fetchCategories = async () => {
+    try {
+      const res = await axios.get(API_URL);
+      const data = res.data;
+
+      // FIX: Use data.data directly based on API response structure
+      const apiCategories: Category[] = data.data.map((cat: any) => {
+        const subcategories: Subcategory[] = (cat.subcategories || []).map((sub: any) => ({
+          name: sub.name,
+          image: sub.images?.[0]?.image
+        }));
+
+        return {
+          name: cat.name,
+          image: subcategories.length > 0 ? subcategories[0].image || "" : "",
+          features: cat.features || [],
+          subcategories,
+        };
+      });
+
+      setCategories(apiCategories);
+    } catch (err) {
+      console.error("Failed to fetch categories:", err);
+      setCategories([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+  fetchCategories();
+}, []);
+
 
   // URL category param effect
   useEffect(() => {

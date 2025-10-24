@@ -24,7 +24,7 @@ const fixUrl = (url: string | File) => {
   return url.replace(/^https?:\/\/https?:\/\//, "https://").replace(/([^:]\/)\/+/g, "$1");
 };
 
-const API_BASE = import.meta.env.VITE_AWS_API_URL || "https://backend.gharsansar.store/api/v1";
+const API_BASE = import.meta.env.VITE_AWS_API_URL || "https://lx70r6zsef.execute-api.ap-south-1.amazonaws.com/prod/api";
 
 const BlogAdmin: React.FC = () => {
   const [blogs, setBlogs] = useState<BlogPost[]>([]);

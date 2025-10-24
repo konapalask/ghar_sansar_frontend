@@ -22,10 +22,15 @@ interface BlogContextType {
 }
 
 const BlogContext = createContext<BlogContextType | undefined>(undefined);
-export const useBlogs = () => useContext(BlogContext);
+export const useBlogs = () => {
+  const context = useContext(BlogContext);
+  if (!context) {
+    throw new Error("useBlogs must be used within a BlogProvider");
+  }
+  return context;
+};
 
-const API_UPLOAD = "https://backend.gharsansar.store/api/v1/storage/uploads";
-const API_FETCH = "https://backend.gharsansar.store/api/v1/storage/uploads/blog";
+const API_FETCH = "http://localhost:800/api/storage/uploads/blog";
 
 interface BlogProviderProps {
   children: ReactNode;
@@ -87,21 +92,21 @@ export const BlogProvider: React.FC<BlogProviderProps> = ({ children }) => {
 
     try {
       const formData = new FormData();
-      formData.append("category_type", "blog");
       formData.append("category_name", blog.features?.[0] || "general");
       formData.append("title", blog.title);
       if (blog.description) formData.append("description", blog.description);
-      if (blog.price) formData.append("price", blog.price.toString());
-
-      if (file) formData.append("image", file);
-
+      if (blog.price !== undefined && blog.price !== null)
+        formData.append("price", String(blog.price));
       if (blog.video) {
         formData.append("video", blog.video);
         const type = detectVideoType(blog.video);
         if (type) formData.append("videoType", type);
       }
+      if (file) {
+        formData.append("file", file);
+      }
 
-      await axios.post(API_UPLOAD, formData, { headers: { "Content-Type": "multipart/form-data" } });
+      await axios.post(API_FETCH, formData, { headers: { "Content-Type": "multipart/form-data" } });
       await fetchBlogs();
     } catch (err) {
       console.error(err);
@@ -113,12 +118,9 @@ export const BlogProvider: React.FC<BlogProviderProps> = ({ children }) => {
   // Remove a blog by its unique id
   const deleteBlog = async (id: string) => {
     try {
-      await axios.delete(API_UPLOAD, {
+      await axios.delete(API_FETCH, {
         params: {
-          category_type: "blog",
-          category_name: "general",
-          subcategory_name: "general",
-          id, // Pass the actual blog UUID here
+          id,
         },
       });
       setBlogs((prev) => prev.filter((b) => b.id !== id));

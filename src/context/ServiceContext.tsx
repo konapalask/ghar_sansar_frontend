@@ -24,7 +24,7 @@ interface ServiceContextType {
 
 const ServiceContext = createContext<ServiceContextType | undefined>(undefined);
 
-const API_BASE = "https://backend.gharsansar.store/api/v1/storage/uploads";
+const API_BASE = "https://lx70r6zsef.execute-api.ap-south-1.amazonaws.com/prod/api/storage/uploads";
 
 // ✅ Normalize image URL
 const fixImageUrl = (url: string | undefined) => {

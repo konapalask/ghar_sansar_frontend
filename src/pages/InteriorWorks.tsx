@@ -12,7 +12,7 @@ interface InteriorWork {
   subCategory: string;
 }
 
-const API_URL = "https://backend.gharsansar.store/api/v1/storage/uploads/interior";
+const API_URL = "https://lx70r6zsef.execute-api.ap-south-1.amazonaws.com/prod/api/storage/uploads/interior";
 const ITEMS_PER_PAGE = 9; // adjust per your layout (3x3 grid etc.)
 
 const InteriorWorks: React.FC = () => {

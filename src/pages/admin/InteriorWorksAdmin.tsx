@@ -17,7 +17,7 @@ interface Category {
   subcategories: { name: string }[];
 }
 
-const API_UPLOAD = "https://backend.gharsansar.store/api/v1/storage/uploads";
+const API_UPLOAD = "https://lx70r6zsef.execute-api.ap-south-1.amazonaws.com/prod/api/storage/uploads";
 
 const InteriorWorksAdmin: React.FC = () => {
   const [works, setWorks] = useState<InteriorWork[]>([]);
