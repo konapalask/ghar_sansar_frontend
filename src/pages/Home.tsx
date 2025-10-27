@@ -1,7 +1,7 @@
 // src/pages/Home.tsx
 import React from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Truck, Shield, Headphones, XCircle } from "lucide-react";
+import { ArrowRight, Truck, Shield, Headphones, XCircle, Eye, Palette, HandHeart, CheckCircle, Home as HomeIcon, Wand2, Sparkles, Brush } from "lucide-react";
 import { motion } from "framer-motion";
 import { useProducts } from "../context/ProductContext"; // ✅ using context
 
@@ -34,11 +34,89 @@ const Home: React.FC = () => {
   // ✅ Pick first 6 products as "recent" (backend usually gives newest first)
   const recentProducts = products.slice(0, 6);
 
+  // How We Work steps
+  const workSteps = [
+    {
+      icon: Eye,
+      title: "Browse & Select",
+      description: "Explore our extensive collection of products and interior design galleries. Select items or design services that match your style.",
+      color: "blue"
+    },
+    {
+      icon: Palette,
+      title: "Consultation",
+      description: "Connect with our design experts for personalized advice. Get professional recommendations tailored to your space and preferences.",
+      color: "purple"
+    },
+    {
+      icon: HandHeart,
+      title: "We Deliver",
+      description: "Experience hassle-free delivery right to your doorstep. We handle the logistics so you can focus on enjoying your new space.",
+      color: "green"
+    },
+    {
+      icon: CheckCircle,
+      title: "Enjoy",
+      description: "Transform your space and enjoy the results. Our commitment to quality ensures long-lasting satisfaction with your home transformation.",
+      color: "orange"
+    }
+  ];
+
+  // Interior Works Services
+  const interiorWorks = [
+    {
+      icon: HomeIcon,
+      title: "3D Wallpapers",
+      description: "Transform your walls with stunning 3D wallpapers that add depth and character to any room",
+      category: "3dbokka",
+      gradient: "from-purple-500 to-pink-500"
+    },
+    {
+      icon: Wand2,
+      title: "Wall Art Effect",
+      description: "Create dramatic visual impact with our premium wall art effects and treatments",
+      category: "wallart",
+      gradient: "from-blue-500 to-cyan-500"
+    },
+    {
+      icon: Sparkles,
+      title: "Water Fountains",
+      description: "Add tranquility and elegance with custom water fountains and bubble features",
+      category: "fountain",
+      gradient: "from-green-500 to-teal-500"
+    },
+    {
+      icon: Brush,
+      title: "Vertical Gardens",
+      description: "Bring nature indoors with beautiful artificial and natural vertical garden solutions",
+      category: "maddalo_garden",
+      gradient: "from-orange-500 to-red-500"
+    },
+    {
+      icon: Palette,
+      title: "Flooring Solutions",
+      description: "Premium vinyl, wooden, and gym flooring options to suit every style and need",
+      category: "vinyl_flooring",
+      gradient: "from-indigo-500 to-purple-500"
+    },
+    {
+      icon: HomeIcon,
+      title: "Blinds & Canopies",
+      description: "Stylish blinds, canopies, and automation solutions for modern living spaces",
+      category: "blinds",
+      gradient: "from-amber-500 to-yellow-500"
+    }
+  ];
+
   return (
-    <main className="w-full max-w-screen-xl mx-auto px-8 sm:px-6 lg:px-8">
+    <main className="w-full max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-blue-50 to-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative bg-gradient-to-br from-blue-50 via-indigo-50 to-white py-12 sm:py-16 lg:py-20 overflow-hidden">
+        {/* Decorative elements */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-400/10 rounded-full blur-3xl"></div>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Text */}
             <motion.div
@@ -46,25 +124,25 @@ const Home: React.FC = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
             >
-              <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-extrabold text-gray-900 mb-4 sm:mb-6 leading-tight">
                 Transform Your
-                <span className="text-blue-600 block">Home Today</span>
+                <span className="block bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Home Today</span>
               </h1>
-              <p className="text-xl text-gray-600 mb-8">
+              <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-6 sm:mb-8 leading-relaxed">
                 Discover premium home decor items and professional interior
                 design services to create the perfect living space.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <Link
                   to="/interior-design"
-                  className="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 transition-colors font-semibold inline-flex items-center justify-center group"
+                  className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 sm:px-8 sm:py-4 rounded-lg hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 font-semibold inline-flex items-center justify-center group text-sm sm:text-base"
                 >
                   Design Services
-                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
                 <Link
                   to="/products"
-                  className="border-2 border-blue-600 text-blue-600 px-8 py-4 rounded-lg hover:bg-blue-600 hover:text-white transition-colors font-semibold inline-flex items-center justify-center"
+                  className="border-2 border-blue-600 text-blue-600 px-6 py-3 sm:px-8 sm:py-4 rounded-lg hover:bg-blue-600 hover:text-white hover:shadow-lg transition-all duration-300 font-semibold inline-flex items-center justify-center text-sm sm:text-base"
                 >
                   Shop Now
                 </Link>
@@ -96,43 +174,144 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Recent Products Section */}
-      <section className="py-16 bg-gray-50">
+      {/* How We Work Section */}
+      <section className="py-12 sm:py-16 bg-gradient-to-b from-white to-blue-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+          <div className="text-center mb-8 sm:mb-12">
+            <motion.h2 
+              initial={{ opacity: 0, y: -20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4"
+            >
+              How We Work
+            </motion.h2>
+            <motion.p 
+              initial={{ opacity: 0, y: -20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto px-4"
+            >
+              From browsing to delivery, we make your home transformation journey seamless
+            </motion.p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mt-12">
+            {workSteps.map((step, index) => {
+              const colorClasses = {
+                blue: "bg-blue-100 text-blue-600",
+                purple: "bg-purple-100 text-purple-600",
+                green: "bg-green-100 text-green-600",
+                orange: "bg-orange-100 text-orange-600"
+              };
+
+              return (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow group relative"
+                >
+                  <div className="flex flex-col items-center text-center">
+                    {/* Icon */}
+                    <div className={`w-20 h-20 rounded-full ${colorClasses[step.color as keyof typeof colorClasses]} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                      <step.icon className="w-10 h-10" />
+                    </div>
+                    
+                    {/* Step Number */}
+                    <div className="absolute -top-3 -right-3 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-sm">
+                      {index + 1}
+                    </div>
+                    
+                    {/* Content */}
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3 px-2">
+                      {step.title}
+                    </h3>
+                    <p className="text-gray-600 text-xs sm:text-sm leading-relaxed px-2">
+                      {step.description}
+                    </p>
+                  </div>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {/* Call to Action */}
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="mt-12 text-center"
+          >
+            <Link
+              to="/products"
+              className="bg-blue-600 text-white px-8 py-4 rounded-lg hover:bg-blue-700 transition-colors font-semibold inline-flex items-center group shadow-lg"
+            >
+              Start Your Journey
+              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Recent Products Section */}
+      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-white to-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+            <motion.h2 
+              initial={{ opacity: 0, y: -20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-3 sm:mb-4"
+            >
               Recent Products
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            </motion.h2>
+            <motion.p 
+              initial={{ opacity: 0, y: -20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto px-4"
+            >
               Check out our latest arrivals for your home.
-            </p>
+            </motion.p>
           </div>
 
           {recentProducts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
               {recentProducts.map((product, index) => (
                 <motion.div
                   key={product.id}
                   initial={{ opacity: 0, y: 30 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow group"
+                  className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 group cursor-pointer hover:-translate-y-2"
                 >
                   {/* Product Image */}
-                  <div className="relative overflow-hidden">
-                    <img
-                      src={product.image}
-                      alt={product.title}
-                      className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute top-4 left-4 px-2 py-1 rounded-lg text-sm font-medium text-white bg-blue-600">
+                  <div className="relative overflow-hidden bg-gray-100">
+                                         <img
+                       src={product.image}
+                       alt={product.title}
+                       className="w-full h-48 sm:h-56 md:h-64 object-cover group-hover:scale-110 transition-transform duration-500"
+                       loading="lazy"
+                     />
+                    <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg">
                       New
+                    </div>
+                    {/* Overlay on hover */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-6">
+                      <Link 
+                        to={`/products/${product.id}`}
+                        className="bg-white text-blue-600 px-6 py-2 rounded-full font-semibold hover:bg-blue-600 hover:text-white transition-all duration-300"
+                      >
+                        View Details
+                      </Link>
                     </div>
                   </div>
 
                   {/* Product Info */}
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold text-gray-900">
+                  <div className="p-4 sm:p-6">
+                    <h3 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
                       {product.title}
                     </h3>
                   </div>
@@ -147,38 +326,137 @@ const Home: React.FC = () => {
 
           {/* Show "View All" if more than 6 */}
           {products.length > 6 && (
-            <div className="text-center mt-12">
+            <div className="text-center mt-8 sm:mt-12 lg:mt-16">
               <Link
                 to="/products"
-                className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold inline-flex items-center group"
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 sm:px-10 sm:py-4 rounded-lg hover:from-blue-700 hover:to-indigo-700 shadow-xl hover:shadow-2xl transition-all duration-300 font-bold text-sm sm:text-base md:text-lg inline-flex items-center group"
               >
                 View All Products
-                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
             </div>
           )}
         </div>
       </section>
 
+      {/* Interior Works Section */}
+      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-gray-50 via-blue-50 to-white relative overflow-hidden">
+        {/* Decorative background elements */}
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-400/5 rounded-full blur-3xl hidden sm:block"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-indigo-400/5 rounded-full blur-3xl hidden sm:block"></div>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="inline-block"
+            >
+              <span className="text-blue-600 font-semibold text-xs sm:text-sm uppercase tracking-wide mb-2 block">
+                Interior Design Services
+              </span>
+            </motion.div>
+            <motion.h2 
+              initial={{ opacity: 0, y: -20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-3 sm:mb-4"
+            >
+              Our Interior Works
+            </motion.h2>
+            <motion.p 
+              initial={{ opacity: 0, y: -20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4"
+            >
+              Transform your space with our professional interior design solutions
+            </motion.p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+            {interiorWorks.map((work, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                whileHover={{ y: -8 }}
+                className="group"
+              >
+                <Link to="/interior-design" className="block h-full">
+                  <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 h-full border border-gray-100">
+                    {/* Icon with gradient background */}
+                    <div className={`relative h-36 sm:h-40 md:h-48 bg-gradient-to-br ${work.gradient} flex items-center justify-center overflow-hidden`}>
+                      <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-all duration-300"></div>
+                      <div className="relative transform group-hover:scale-110 transition-transform duration-300">
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                          <work.icon className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-white" />
+                        </div>
+                      </div>
+                      
+                      {/* Decorative circle */}
+                      <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+                      <div className="absolute -top-10 -left-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+                    </div>
+                    
+                    {/* Content */}
+                    <div className="p-4 sm:p-6">
+                      <h3 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 mb-2 sm:mb-3 group-hover:text-blue-600 transition-colors duration-200">
+                        {work.title}
+                      </h3>
+                      <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4">
+                        {work.description}
+                      </p>
+                      <div className="flex items-center text-blue-600 font-semibold text-xs sm:text-sm group-hover:translate-x-1 transition-transform duration-200">
+                        View Gallery
+                        <ArrowRight className="ml-2 w-3 h-3 sm:w-4 sm:h-4" />
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* CTA Button */}
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            className="text-center mt-8 sm:mt-12 lg:mt-16"
+          >
+            <Link
+              to="/interior-design"
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 sm:px-10 sm:py-4 rounded-lg hover:from-blue-700 hover:to-indigo-700 shadow-xl hover:shadow-2xl transition-all duration-300 font-bold text-sm sm:text-base md:text-lg inline-flex items-center group"
+            >
+              Explore All Interior Works
+              <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Features Section (Above Footer) */}
-      <section className="py-16 bg-white border-t">
+      <section className="py-12 sm:py-16 bg-white border-t">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
             {features.map((feature, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="text-center p-6"
+                className="text-center p-4 sm:p-6"
               >
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <feature.icon className="w-8 h-8 text-blue-600" />
+                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <feature.icon className="w-7 h-7 sm:w-8 sm:h-8 text-blue-600" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                <h3 className="text-base sm:text-lg md:text-xl font-semibold text-gray-900 mb-2">
                   {feature.title}
                 </h3>
-                <p className="text-gray-600">{feature.description}</p>
+                <p className="text-sm sm:text-base text-gray-600">{feature.description}</p>
               </motion.div>
             ))}
           </div>

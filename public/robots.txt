@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Allow all search engines to crawl the entire site
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Sitemap location (update this with your actual sitemap URL once deployed)
+Sitemap: https://gharsansar.store/sitemap.xml

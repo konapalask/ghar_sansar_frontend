@@ -30,7 +30,9 @@ export const useBlogs = () => {
   return context;
 };
 
-const API_FETCH = "http://localhost:800/api/storage/uploads/blog";
+const API_FETCH = import.meta.env.VITE_AWS_API_URL 
+  ? `${import.meta.env.VITE_AWS_API_URL}/storage/upload/blog`
+  : "https://lx70r6zsef.execute-api.ap-south-1.amazonaws.com/prod/api/storage/upload/blog";
 
 interface BlogProviderProps {
   children: ReactNode;
@@ -56,8 +58,11 @@ export const BlogProvider: React.FC<BlogProviderProps> = ({ children }) => {
       setError(null);
 
       const res = await axios.get(API_FETCH, { headers: { Accept: "application/json" } });
+      
+      // Handle new API structure with data.data array
+      const categories = res.data.data || res.data.categories || [];
 
-      const allBlogs: Blog[] = res.data.categories?.flatMap((cat: any) =>
+      const allBlogs: Blog[] = categories?.flatMap((cat: any) =>
         cat.subcategories?.flatMap((sub: any) =>
           sub.images?.map((img: any) => ({
             id: img.id || img.name, // Use real backend UUID 'id' or fallback to 'name'

@@ -20,7 +20,7 @@ function formatName(name) {
 const handwritingStyle = "font-bold italic font-cursive";
 
 const ProductsPage = () => {
-  const { products } = useProducts();
+  const { products, loading, error } = useProducts();
   const location = useLocation();
   const navigate = useNavigate();
   const query = useQuery();
@@ -33,8 +33,7 @@ const ProductsPage = () => {
 
   // Scroll to top when page or filters change
   useEffect(() => {
-    const offset = 0; // set to navbar height if fixed, e.g. 80
-    window.scrollTo({ top: offset, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, [page, categoryFilter, subCategoryFilter, search]);
 
   // Precompute lists
@@ -150,7 +149,16 @@ const ProductsPage = () => {
       </div>
 
       {/* Products Grid */}
-      {currentProducts.length > 0 ? (
+      {loading ? (
+        <div className="flex justify-center items-center py-12">
+          <div className="text-xl text-gray-600">Loading products...</div>
+        </div>
+      ) : error ? (
+        <div className="flex flex-col justify-center items-center py-12">
+          <div className="text-xl text-red-600 mb-2">Error loading products</div>
+          <div className="text-sm text-gray-500">{error}</div>
+        </div>
+      ) : currentProducts.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
           {currentProducts.map((p) => (
             <div
@@ -163,6 +171,7 @@ const ProductsPage = () => {
                   src={p.image}
                   alt={p.title}
                   className="w-full h-60 sm:h-72 md:h-80 object-cover rounded-lg"
+                  loading="lazy"
                 />
               ) : (
                 <div className="w-full h-60 sm:h-72 md:h-80 bg-gray-200 flex items-center justify-center rounded-lg">

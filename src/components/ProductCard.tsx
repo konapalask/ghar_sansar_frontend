@@ -32,11 +32,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       className="cursor-pointer w-full bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition"
       onClick={handleToggleDescription}
     >
-      <img
-        src={product.image}
-        alt={product.name.replace("_", " ")}
-        className="w-full h-64 object-cover sm:h-80 md:h-96"
-      />
+             <img
+         src={product.image}
+         alt={product.name.replace("_", " ")}
+         className="w-full h-64 object-cover sm:h-80 md:h-96"
+         loading="lazy"
+       />
       <div className="p-4 text-center">
         <h3 className="font-semibold text-lg">{product.name.replace("_", " ")}</h3>
 

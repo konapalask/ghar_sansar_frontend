@@ -17,7 +17,7 @@ interface Category {
   subcategories: { name: string }[];
 }
 
-const API_UPLOAD = "https://lx70r6zsef.execute-api.ap-south-1.amazonaws.com/prod/api/storage/uploads";
+const API_UPLOAD = "https://lx70r6zsef.execute-api.ap-south-1.amazonaws.com/prod/api/storage/upload";
 
 const InteriorWorksAdmin: React.FC = () => {
   const [works, setWorks] = useState<InteriorWork[]>([]);
@@ -29,9 +29,13 @@ const InteriorWorksAdmin: React.FC = () => {
     try {
       const res = await axios.get(`${API_UPLOAD}/interior`);
       const data = await res.data;
+      
+      // Handle new API structure with data.data array
+      const categories = data.data || data.categories || [];
+      
       setCategoriesData(
-        Array.isArray(data.categories)
-          ? data.categories.map((cat: any) => ({
+        Array.isArray(categories)
+          ? categories.map((cat: any) => ({
               name: cat.name,
               subcategories: Array.isArray(cat.subcategories)
                 ? cat.subcategories.map((sub: any) => ({ name: sub.name }))
@@ -40,18 +44,16 @@ const InteriorWorksAdmin: React.FC = () => {
           : []
       );
 
-      const flatWorks: InteriorWork[] = data.categories
+      const flatWorks: InteriorWork[] = categories
         .flatMap((cat: any) =>
-          cat.subcategories.flatMap((sub: any) =>
-            sub.images.map((imgObj: any) => ({
-              id: imgObj.id,
-              title: imgObj.title,
-              category: cat.name,
-              subCategory: sub.name,
-              description: imgObj.description,
-              image: imgObj.image,
-            }))
-          )
+          cat.subcategories.map((sub: any, idx: number) => ({
+            id: sub.id || `${cat.name}-${sub.name}-${idx}`,
+            title: sub.name,
+            category: cat.name,
+            subCategory: sub.name,
+            description: sub.description || cat.name,
+            image: sub.image,
+          }))
         );
       setWorks(flatWorks);
     } catch (err) {

@@ -12,7 +12,7 @@ interface InteriorWork {
   subCategory: string;
 }
 
-const API_URL = "https://lx70r6zsef.execute-api.ap-south-1.amazonaws.com/prod/api/storage/uploads/interior";
+const API_URL = "https://lx70r6zsef.execute-api.ap-south-1.amazonaws.com/prod/api/storage/upload/interior";
 const ITEMS_PER_PAGE = 9; // adjust per your layout (3x3 grid etc.)
 
 const InteriorWorks: React.FC = () => {
@@ -28,22 +28,30 @@ const InteriorWorks: React.FC = () => {
     const fetchWorks = async () => {
       try {
         const res = await axios.get(API_URL);
-        const data = res.data;
+        const responseData = res.data;
 
-        // Flatten JSON structure: categories → subcategories → images
-        const flatWorks: InteriorWork[] = data.categories
-          .flatMap((cat: any) =>
-            cat.subcategories.flatMap((sub: any) =>
-              sub.images.map((imgObj: any) => ({
-                id: imgObj.id,
-                title: imgObj.title,
-                description: imgObj.description,
-                image: imgObj.image,
-                category: cat.name,
+        // Handle new JSON structure with data array
+        const flatWorks: InteriorWork[] = [];
+        
+        if (responseData.data && Array.isArray(responseData.data)) {
+          responseData.data.forEach((category: any, catIndex: number) => {
+            category.subcategories.forEach((sub: any, subIndex: number) => {
+              // Ensure image path starts with / for proper routing
+              const imagePath = sub.image 
+                ? (sub.image.startsWith('/') ? sub.image : `/${sub.image}`)
+                : undefined;
+              
+              flatWorks.push({
+                id: `${catIndex}-${subIndex}`,
+                title: sub.name,
+                description: category.name,
+                image: imagePath,
+                category: category.name,
                 subCategory: sub.name,
-              }))
-            )
-          );
+              });
+            });
+          });
+        }
 
         setWorks(flatWorks);
       } catch (err) {

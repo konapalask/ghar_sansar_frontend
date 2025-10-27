@@ -84,16 +84,20 @@ const InteriorDesignPage = () => {
       const res = await axios.get(API_URL);
       const data = res.data;
 
-      // FIX: Use data.data directly based on API response structure
-      const apiCategories: Category[] = data.data.map((cat: any) => {
+      // Handle new JSON structure with data array
+      const apiCategories: Category[] = (data.data || []).map((cat: any) => {
         const subcategories: Subcategory[] = (cat.subcategories || []).map((sub: any) => ({
           name: sub.name,
-          image: sub.images?.[0]?.image
+          image: sub.image ? (sub.image.startsWith('/') ? sub.image : `/${sub.image}`) : undefined,
+          video: sub.video ? (sub.video.startsWith('/') ? sub.video : `/${sub.video}`) : undefined
         }));
+
+        // Get first subcategory image as category image
+        const categoryImage = subcategories.length > 0 ? subcategories[0].image || "" : "";
 
         return {
           name: cat.name,
-          image: subcategories.length > 0 ? subcategories[0].image || "" : "",
+          image: categoryImage,
           features: cat.features || [],
           subcategories,
         };
@@ -150,18 +154,34 @@ const InteriorDesignPage = () => {
   }, [filteredCategories, currentPage]);
 
   const currentCat = categories.find((c) => c.name === activeCategory);
-  const subcategories = currentCat?.subcategories ?? [];
-  const subCatTotalPages = Math.ceil(subcategories.length / itemsPerPage);
+  const allSubcategories = currentCat?.subcategories ?? [];
+  
+  // Filter subcategories based on search
+  const filteredSubcategories = useMemo(() => {
+    if (!search.trim()) return allSubcategories;
+    return allSubcategories.filter((sub) =>
+      sub.name.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [allSubcategories, search]);
+  
+  const subCatTotalPages = Math.ceil(filteredSubcategories.length / itemsPerPage);
   const paginatedSubCategories = useMemo(() => {
     const startIdx = (subCatPage - 1) * itemsPerPage;
-    return subcategories.slice(startIdx, startIdx + itemsPerPage);
-  }, [subcategories, subCatPage]);
+    return filteredSubcategories.slice(startIdx, startIdx + itemsPerPage);
+  }, [filteredSubcategories, subCatPage]);
 
   useEffect(() => {
     setSubCatPage(1);
     setActiveDesign(null);
     setDesignForEnquiry(null);
   }, [activeCategory]);
+
+  // Reset subcategory page when search changes
+  useEffect(() => {
+    if (activeCategory) {
+      setSubCatPage(1);
+    }
+  }, [search]);
 
   // Handlers
   function onSelectCategory(catName: string) {
@@ -409,12 +429,14 @@ Please contact me.`;
                   </div>
                 ))
               ) : (
-                <p className="text-center w-full py-14 text-gray-500">No designs available.</p>
+                <p className="text-center w-full py-14 text-gray-500">
+                  {search ? `No designs found matching "${search}"` : "No designs available."}
+                </p>
               )}
             </div>
 
             {/* Subcategory Pagination */}
-            {subcategories.length > itemsPerPage && (
+            {filteredSubcategories.length > itemsPerPage && (
               <nav className="flex justify-center mt-10 space-x-3">
                 <button
                   onClick={() => {

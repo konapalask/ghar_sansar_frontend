@@ -27,7 +27,7 @@ export const useInterior = () => {
   return context;
 };
 
-const API_URL = "https://lx70r6zsef.execute-api.ap-south-1.amazonaws.com/prod/api/storage/uploads/interior";
+const API_URL = "https://lx70r6zsef.execute-api.ap-south-1.amazonaws.com/prod/api/storage/upload/interior";
 
 // Sanitize URLs
 const sanitizeUrl = (url?: string) => {
@@ -57,23 +57,31 @@ export const InteriorProvider: React.FC<InteriorProviderProps> = ({ children }) 
     setError(null);
     try {
       const res = await axios.get(API_URL, { headers: { Accept: "application/json" } });
-      const data = res.data;
+      const responseData = res.data;
 
-      // Flatten categories → subcategories → images
-      const flatWorks: InteriorWork[] = data.categories
-        .flatMap((cat: any) =>
-          cat.subcategories.flatMap((sub: any) =>
-            sub.images.map((imgObj: any) => ({
-              id: imgObj.id,
-              title: imgObj.title,
-              category: cat.name,
-              subCategory: sub.name,
-              description: imgObj.description,
-              image: sanitizeUrl(imgObj.image),
-              videoUrl: sanitizeUrl(imgObj.video),
-            }))
-          )
-        );
+             // Handle new JSON structure with data array
+       const flatWorks: InteriorWork[] = [];
+       
+       if (responseData.data && Array.isArray(responseData.data)) {
+         responseData.data.forEach((category: any, catIndex: number) => {
+           category.subcategories.forEach((sub: any, subIndex: number) => {
+             // Ensure image path starts with / for proper routing
+             const imagePath = sub.image 
+               ? (sub.image.startsWith('/') ? sub.image : `/${sub.image}`)
+               : undefined;
+             
+             flatWorks.push({
+               id: `${catIndex}-${subIndex}`,
+               title: sub.name,
+               category: category.name,
+               subCategory: sub.name,
+               description: category.name,
+               image: sanitizeUrl(imagePath),
+               videoUrl: sanitizeUrl(sub.video),
+             });
+           });
+         });
+       }
 
       setWorks(flatWorks);
     } catch (err) {

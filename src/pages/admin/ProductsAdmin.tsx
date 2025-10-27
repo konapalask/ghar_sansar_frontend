@@ -53,15 +53,18 @@ const ProductsAdmin: React.FC = () => {
   const fetchCategoriesAndProducts = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/storage/uploads/products`, {
+      const res = await fetch(`${API_BASE}/storage/upload/products`, {
         headers: { Accept: "application/json" },
       });
       if (!res.ok) throw new Error(`Failed to fetch products: ${res.status}`);
       const data = await res.json();
 
+      // Handle new API structure with data.data array
+      const categories = data.data || data.categories || [];
+
       setCategoriesData(
-        Array.isArray(data.categories)
-          ? data.categories.map((cat: any) => ({
+        Array.isArray(categories)
+          ? categories.map((cat: any) => ({
               name: cat.name,
               subcategories: Array.isArray(cat.subcategories)
                 ? cat.subcategories.map((sub: any) => ({ name: sub.name }))
@@ -71,11 +74,23 @@ const ProductsAdmin: React.FC = () => {
       );
 
       const allProducts: Product[] = [];
-      data?.categories?.forEach((category: any) => {
+      categories?.forEach((category: any) => {
         category.subcategories?.forEach((sub: any) => {
-          sub.images?.forEach((img: any, index: number) => {
+          // Handle both 'products' and 'images' arrays
+          const items = sub.products || sub.images || [];
+          items.forEach((img: any, index: number) => {
+            // Log first item for debugging
+            if (index === 0 && allProducts.length === 0) {
+              console.log("First product item:", img);
+              console.log("Has ID:", !!img.id);
+              console.log("ID value:", img.id);
+            }
+            
+            // Generate a temporary ID if missing (for display only - won't work for delete/edit)
+            const productId = img.id || `temp-${category.name}-${sub.name}-${index}`;
+            
             allProducts.push({
-              id: img.id || `${category.name}-${sub.name}-${index}`,
+              id: productId,
               title: img.title || "Untitled Product",
               description: img.description || "No description",
               price: img.price?.toString() || "0",
@@ -125,6 +140,12 @@ const ProductsAdmin: React.FC = () => {
       let res: Response;
 
       if (editingId) {
+        // Check if editing a temporary ID
+        if (editingId.startsWith('temp-')) {
+          alert("Cannot edit: This product doesn't have a valid UUID from the backend.");
+          return;
+        }
+
         // Update product with URLSearchParams for application/x-www-form-urlencoded
         const params = new URLSearchParams();
 
@@ -137,8 +158,8 @@ const ProductsAdmin: React.FC = () => {
         params.append("description", form.description);
         form.features.forEach((feat) => params.append("features", feat));
 
-        // Note: Image file update via separate upload might be required (API doc unclear on image upload for update)
-        // If image update is supported in PUT, backend may require separate mechanism or API call.
+        console.log("Updating product with ID:", editingId);
+        console.log("Update params:", params.toString());
 
         res = await fetch(`${API_BASE}/storage/uploads/products`, {
           method: "PUT",
@@ -147,6 +168,12 @@ const ProductsAdmin: React.FC = () => {
           },
           body: params.toString(),
         });
+
+        console.log("Update response status:", res.status);
+        if (!res.ok) {
+          const errText = await res.text();
+          console.error("Update failed:", errText);
+        }
       } else {
         // Create new product with FormData, multipart/form-data
         const formData = new FormData();
@@ -164,10 +191,16 @@ const ProductsAdmin: React.FC = () => {
           formData.append("image", form.image);
         }
 
-        res = await fetch(`${API_BASE}/storage/uploads`, {
+        res = await fetch(`${API_BASE}/storage/upload`, {
           method: "POST",
           body: formData,
         });
+
+        console.log("Create response status:", res.status);
+        if (!res.ok) {
+          const errText = await res.text();
+          console.error("Create failed:", errText);
+        }
       }
 
       if (!res.ok) {
@@ -198,8 +231,20 @@ const ProductsAdmin: React.FC = () => {
 
   // Edit product: load data into form
   const handleEdit = (id: string) => {
+    // Check if this is a temporary ID
+    if (id.startsWith('temp-')) {
+      alert("Cannot edit: This product doesn't have a valid UUID from the backend.");
+      return;
+    }
+
     const p = products.find((p) => p.id === id);
-    if (!p) return;
+    if (!p) {
+      alert("Product not found!");
+      return;
+    }
+
+    console.log("Editing product with ID:", id);
+    console.log("Product data:", p);
 
     setForm({
       title: p.title,
@@ -223,7 +268,16 @@ const ProductsAdmin: React.FC = () => {
     if (!confirm("Are you sure you want to delete this product?")) return;
 
     const product = products.find((p) => p.id === id);
-    if (!product) return;
+    if (!product) {
+      alert("Product not found!");
+      return;
+    }
+
+    // Check if this is a temporary ID (doesn't start with UUID format)
+    if (id.startsWith('temp-')) {
+      alert("Cannot delete: This product doesn't have a valid UUID from the backend.");
+      return;
+    }
 
     try {
       const query = new URLSearchParams({
@@ -232,15 +286,22 @@ const ProductsAdmin: React.FC = () => {
         id: id,
       }).toString();
 
+      console.log("Deleting product with ID:", id);
+      console.log("Delete URL:", `${API_BASE}/storage/uploads/products?${query}`);
+
       const res = await fetch(`${API_BASE}/storage/uploads/products?${query}`, {
         method: "DELETE",
       });
 
+      console.log("Delete response status:", res.status);
+      
       if (!res.ok) {
         const errText = await res.text();
+        console.error("Delete failed response:", errText);
         throw new Error(`Delete failed: ${errText}`);
       }
 
+      alert("Product deleted successfully!");
       await fetchCategoriesAndProducts();
     } catch (err) {
       alert("Delete failed. Check console for details.");
@@ -354,31 +415,47 @@ const ProductsAdmin: React.FC = () => {
         <p>Loading products...</p>
       ) : Array.isArray(products) && products.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {products.map((p) => (
-            <div key={p.id} className="border rounded p-3 shadow-sm">
-              {p.image && (
-                <div className="aspect-video w-full bg-gray-100 rounded overflow-hidden mb-2">
-                  <img src={fixImageUrl(p.image)} alt={p.title} className="w-full h-full object-contain" />
+          {products.map((p) => {
+            const isTempId = p.id.startsWith('temp-');
+            return (
+              <div key={p.id} className={`border rounded p-3 shadow-sm ${isTempId ? 'bg-yellow-50 border-yellow-300' : ''}`}>
+                {isTempId && (
+                  <div className="bg-yellow-200 text-yellow-800 text-xs font-semibold px-2 py-1 rounded mb-2">
+                    ⚠️ No UUID - Cannot Edit/Delete
+                  </div>
+                )}
+                {p.image && (
+                  <div className="aspect-video w-full bg-gray-100 rounded overflow-hidden mb-2">
+                    <img src={fixImageUrl(p.image)} alt={p.title} className="w-full h-full object-contain" />
+                  </div>
+                )}
+                {p.video && (
+                  <video controls className="aspect-video w-full rounded mb-2 bg-black">
+                    <source src={fixImageUrl(p.video)} />
+                  </video>
+                )}
+                <h3 className="font-bold">{p.title}</h3>
+                <p className="text-sm text-gray-600">{p.description}</p>
+                <p className="text-lg font-semibold">₹{p.price}</p>
+                <div className="flex space-x-2 mt-2">
+                  <button 
+                    onClick={() => handleEdit(p.id)} 
+                    disabled={isTempId}
+                    className={`${isTempId ? 'bg-gray-300 cursor-not-allowed' : 'bg-yellow-500 hover:bg-yellow-600'} text-white px-2 py-1 rounded flex items-center`}
+                  >
+                    <Edit3 className="w-4 h-4 mr-1" /> Edit
+                  </button>
+                  <button 
+                    onClick={() => handleDelete(p.id)} 
+                    disabled={isTempId}
+                    className={`${isTempId ? 'bg-gray-300 cursor-not-allowed' : 'bg-red-500 hover:bg-red-600'} text-white px-2 py-1 rounded flex items-center`}
+                  >
+                    <Trash2 className="w-4 h-4 mr-1" /> Delete
+                  </button>
                 </div>
-              )}
-              {p.video && (
-                <video controls className="aspect-video w-full rounded mb-2 bg-black">
-                  <source src={fixImageUrl(p.video)} />
-                </video>
-              )}
-              <h3 className="font-bold">{p.title}</h3>
-              <p className="text-sm text-gray-600">{p.description}</p>
-              <p className="text-lg font-semibold">₹{p.price}</p>
-              <div className="flex space-x-2 mt-2">
-                <button onClick={() => handleEdit(p.id)} className="bg-yellow-500 text-white px-2 py-1 rounded flex items-center">
-                  <Edit3 className="w-4 h-4 mr-1" /> Edit
-                </button>
-                <button onClick={() => handleDelete(p.id)} className="bg-red-500 text-white px-2 py-1 rounded flex items-center">
-                  <Trash2 className="w-4 h-4 mr-1" /> Delete
-                </button>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <p className="text-gray-500">No products found.</p>

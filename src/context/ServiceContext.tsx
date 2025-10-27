@@ -24,7 +24,7 @@ interface ServiceContextType {
 
 const ServiceContext = createContext<ServiceContextType | undefined>(undefined);
 
-const API_BASE = "https://lx70r6zsef.execute-api.ap-south-1.amazonaws.com/prod/api/storage/uploads";
+const API_BASE = import.meta.env.VITE_AWS_API_URL || "https://lx70r6zsef.execute-api.ap-south-1.amazonaws.com/prod/api";
 
 // ✅ Normalize image URL
 const fixImageUrl = (url: string | undefined) => {
@@ -47,32 +47,42 @@ export const ServiceProvider: React.FC<{ children: ReactNode }> = ({ children })
   // ✅ Fetch services
   const fetchServices = async (categoryType: string = "services") => {
     try {
-      const res = await axios.get(`${API_BASE}/${categoryType}`, {
+      console.log("Fetching services from:", `${API_BASE}/storage/upload/services`);
+      const res = await axios.get(`${API_BASE}/storage/upload/services`, {
         headers: { accept: "application/json" },
       });
-      const json = res.data;
+      console.log("Services API Response:", res.data);
+      const data = res.data;
       const allServices: Service[] = [];
 
-      if (json?.categories) {
-        json.categories.forEach((cat: any) => {
-          cat.subcategories?.forEach((sub: any) => {
-            sub.images?.forEach((img: any) => {
-              allServices.push({
-                id: img.id || img.name || img.image,
-                title: img.title || "Untitled",
-                description: img.description || "No description",
-                price: img.price || "Custom Pricing",
-                actual_price: img.actual_price || 0,
-                image: fixImageUrl(img.image),
-                category_name: cat.name,
-                subcategory_name: sub.name,
-                features: img.features || [],
-              });
+      // Handle the new API structure with {status: true, data: Array}
+      const categories = data.data || data.categories || [];
+      console.log("Services categories found:", categories.length);
+
+      categories?.forEach((category: any) => {
+        category.subcategories?.forEach((sub: any) => {
+          // Try both 'products' and 'images' fields
+          const items = sub.products || sub.images || [];
+          items.forEach((item: any, index: number) => {
+            if (index === 0 && allServices.length === 0) {
+              console.log("First service item:", item);
+            }
+            allServices.push({
+              id: item.id || `${category.name}-${sub.name}-${index}`,
+              title: item.title || item.name || "Untitled",
+              description: item.description || "No description",
+              price: item.price || "Custom Pricing",
+              actual_price: item.actual_price || 0,
+              image: fixImageUrl(item.image),
+              category_name: category.name,
+              subcategory_name: sub.name,
+              features: item.features || [],
             });
           });
         });
-      }
+      });
 
+      console.log("Total services found:", allServices.length);
       setServices(allServices);
     } catch (err) {
       console.error("❌ Error fetching services:", err);
@@ -106,7 +116,7 @@ export const ServiceProvider: React.FC<{ children: ReactNode }> = ({ children })
         formData.append("image", service.image, service.image.name.replace(/\s/g, "-"));
       }
 
-      await axios.post(`${API_BASE}`, formData, {
+      await axios.post(`${API_BASE}/storage/upload`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       await fetchServices();
@@ -133,7 +143,7 @@ export const ServiceProvider: React.FC<{ children: ReactNode }> = ({ children })
       }
       updated.features?.forEach((f) => payload.append("features", f));
 
-      await axios.put(`${API_BASE}/services`, payload, {
+      await axios.put(`${API_BASE}/storage/upload/services`, payload, {
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
       });
 
@@ -152,7 +162,7 @@ export const ServiceProvider: React.FC<{ children: ReactNode }> = ({ children })
         id: service.id,
       });
 
-      await axios.delete(`${API_BASE}/services?${params.toString()}`);
+      await axios.delete(`${API_BASE}/storage/uploads/services?${params.toString()}`);
       setServices((prev) => prev.filter((s) => s.id !== service.id));
     } catch (err) {
       console.error("❌ Error deleting service:", err);

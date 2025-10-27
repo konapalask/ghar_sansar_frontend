@@ -42,12 +42,13 @@ const ProductDetail: React.FC = () => {
         <ChevronLeft size={18} /> Back
       </button>
 
-      {/* Product Image */}
-      <img
-        src={product.image}
-        alt={product.name || product.title}
-        className="w-full max-h-[70vh] object-contain rounded-xl shadow-lg transition-transform duration-500 hover:scale-[1.02]"
-      />
+             {/* Product Image */}
+       <img
+         src={product.image}
+         alt={product.name || product.title}
+         className="w-full max-h-[70vh] object-contain rounded-xl shadow-lg transition-transform duration-500 hover:scale-[1.02]"
+         loading="lazy"
+       />
 
       {/* Product Name */}
       <h1 className="text-4xl font-extrabold mt-6 tracking-tight text-gray-900">

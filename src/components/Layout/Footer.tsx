@@ -4,8 +4,8 @@ import { Facebook, Twitter, Instagram, Mail, Phone, MapPin, Youtube } from 'luci
 
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-gray-900 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white border-t-4 border-blue-600">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
           <div>
@@ -22,23 +22,31 @@ const Footer: React.FC = () => {
             </p>
             <div className="flex space-x-4">
               <a
-  href="https://www.facebook.com/GharSansarshop/"
-  className="text-gray-400 hover:text-blue-400 transition-colors"
-  target="_blank"
-  rel="noopener noreferrer"
->
-  <Facebook className="w-5 h-5" />
-  <span className="sr-only">Facebook</span>
-</a>
+                href="https://www.facebook.com/GharSansarshop/"
+                className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-blue-400 hover:bg-blue-400/10 rounded-full transition-all duration-200"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Facebook"
+              >
+                <Facebook className="w-5 h-5" />
+              </a>
 
-              <a href="https://www.youtube.com/@gharsansar_shop" className="text-gray-400 hover:text-blue-400 transition-colors"
-              target="_blank"
-  rel="noopener noreferrer">
+              <a 
+                href="https://www.youtube.com/@gharsansar_shop" 
+                className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-blue-400 hover:bg-blue-400/10 rounded-full transition-all duration-200"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="YouTube"
+              >
                 <Youtube className="w-5 h-5" />
               </a>
-              <a href="https://www.instagram.com/gharsansar_shop/" className="text-gray-400 hover:text-blue-400 transition-colors"
-              target="_blank"
-  rel="noopener noreferrer">
+              <a 
+                href="https://www.instagram.com/gharsansar_shop/" 
+                className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-blue-400 hover:bg-blue-400/10 rounded-full transition-all duration-200"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram"
+              >
                 <Instagram className="w-5 h-5" />
               </a>
             </div>
@@ -46,25 +54,25 @@ const Footer: React.FC = () => {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-            <ul className="space-y-2">
+            <h3 className="text-xl font-bold mb-6 text-blue-400">Quick Links</h3>
+            <ul className="space-y-3">
               <li>
-                <Link to="/products" className="text-gray-400 hover:text-white transition-colors">
+                <Link to="/products" className="text-gray-400 hover:text-blue-400 transition-all duration-200 hover:translate-x-1 inline-block">
                   Products
                 </Link>
               </li>
               <li>
-                <Link to="/services" className="text-gray-400 hover:text-white transition-colors">
+                <Link to="/services" className="text-gray-400 hover:text-blue-400 transition-all duration-200 hover:translate-x-1 inline-block">
                   Interior Design
                 </Link>
               </li>
               <li>
-                <Link to="/blog" className="text-gray-400 hover:text-white transition-colors">
+                <Link to="/blog" className="text-gray-400 hover:text-blue-400 transition-all duration-200 hover:translate-x-1 inline-block">
                   Blog
                 </Link>
               </li>
               <li>
-                <Link to="/login" className="text-gray-400 hover:text-white transition-colors">
+                <Link to="/login" className="text-gray-400 hover:text-blue-400 transition-all duration-200 hover:translate-x-1 inline-block">
                   My Account
                 </Link>
               </li>
@@ -73,26 +81,26 @@ const Footer: React.FC = () => {
 
           {/* Categories */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Categories</h3>
-            <ul className="space-y-2">
+            <h3 className="text-xl font-bold mb-6 text-blue-400">Categories</h3>
+            <ul className="space-y-3">
               <li>
-                <a href="/interior-design" className="text-gray-400 hover:text-white transition-colors">
-                  ICU floring
+                <a href="/interior-design" className="text-gray-400 hover:text-blue-400 transition-all duration-200 hover:translate-x-1 inline-block">
+                  ICU Flooring
                 </a>
               </li>
               <li>
-                <a href="/interior-design" className="text-gray-400 hover:text-white transition-colors">
-                  Bubble fountain
+                <a href="/interior-design" className="text-gray-400 hover:text-blue-400 transition-all duration-200 hover:translate-x-1 inline-block">
+                  Bubble Fountain
                 </a>
               </li>
               <li>
-                <a href="/interior-design" className="text-gray-400 hover:text-white transition-colors">
+                <a href="/interior-design" className="text-gray-400 hover:text-blue-400 transition-all duration-200 hover:translate-x-1 inline-block">
                   Wallpaper Rolls
                 </a>
               </li>
               <li>
-                <a href="/interiror-design" className="text-gray-400 hover:text-white transition-colors">
-                  Gym floring
+                <a href="/interior-design" className="text-gray-400 hover:text-blue-400 transition-all duration-200 hover:translate-x-1 inline-block">
+                  Gym Flooring
                 </a>
               </li>
             </ul>
@@ -100,7 +108,7 @@ const Footer: React.FC = () => {
 
           {/* Contact Info */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Contact Us</h3>
+            <h3 className="text-xl font-bold mb-6 text-blue-400">Contact Us</h3>
             <ul className="space-y-3">
               <li className="flex items-center space-x-3">
                 <MapPin className="w-14 h-14 text-blue-400" />

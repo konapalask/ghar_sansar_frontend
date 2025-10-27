@@ -8,6 +8,7 @@ import { ServiceProvider } from "./context/ServiceContext";
 import { InteriorProvider } from "./context/InteriorContext";
 
 import ProtectedRoute from "./components/ProtectedRoute";
+import ScrollToTop from "./components/ScrollToTop";
 import Header from "./components/Layout/Header";
 import Footer from "./components/Layout/Footer";
 
@@ -45,6 +46,7 @@ export default function App() {
             <ServiceProvider>
               <InteriorProvider>
                 <BrowserRouter>
+                  <ScrollToTop />
                   <div className="min-h-screen bg-gray-50">
                     <Header />
                     <main className="pt-16">

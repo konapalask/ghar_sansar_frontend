@@ -142,19 +142,19 @@ const Header: React.FC = () => {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white shadow-md h-16 flex items-center px-3 sm:px-6 w-full min-w-0">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-lg shadow-lg border-b border-gray-100 h-16 flex items-center px-3 sm:px-6 w-full min-w-0">
         {/* Logo */}
-        <Link to="/" aria-label="Go to home" className="flex items-center space-x-2 ml-2 sm:ml-4 shrink-0">
+        <Link to="/" aria-label="Go to home" className="flex items-center space-x-2 ml-2 sm:ml-4 shrink-0 hover:opacity-80 transition-opacity">
           <img src="/ghar sansar logo.svg" alt="Ghar Sansar Logo" className="w-20 h-20 sm:w-40 sm:h-20 object-contain" style={{ minWidth: 0 }} />
         </Link>
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 space-x-6 font-medium text-gray-700" role="navigation">
-          {location.pathname !== "/" && <Link to="/" className="hover:text-blue-600">Home</Link>}
-          <Link to="/interior-design" className="hover:text-blue-600">Interior Design</Link>
-          <Link to="/products" className="hover:text-blue-600">Products</Link>
-          <Link to="/services" className="hover:text-blue-600">Services</Link>
-          <Link to="/blog" className="hover:text-blue-600">Blog</Link>
+          {location.pathname !== "/" && <Link to="/" className="hover:text-blue-600 transition-colors duration-200 font-semibold">Home</Link>}
+          <Link to="/interior-design" className="hover:text-blue-600 transition-colors duration-200 font-semibold">Interior Design</Link>
+          <Link to="/products" className="hover:text-blue-600 transition-colors duration-200 font-semibold">Products</Link>
+          <Link to="/services" className="hover:text-blue-600 transition-colors duration-200 font-semibold">Services</Link>
+          <Link to="/blog" className="hover:text-blue-600 transition-colors duration-200 font-semibold">Blog</Link>
         </nav>
 
         {/* Right side */}
@@ -176,7 +176,7 @@ const Header: React.FC = () => {
             <button
               type="button"
               aria-label={isSearchOpen ? "Close search" : "Open search"}
-              className={`p-2 border border-gray-300 text-gray-600 ${isSearchOpen ? "rounded-r-md border-l-0" : "rounded-md"} hover:text-blue-600`}
+              className={`p-2 border border-gray-300 text-gray-600 ${isSearchOpen ? "rounded-r-md border-l-0" : "rounded-md"} hover:text-blue-600 hover:border-blue-600 transition-all duration-200`}
               onClick={() => {
                 setSearchOpen((v) => !v);
                 setShowSuggestions(false);
@@ -288,7 +288,7 @@ const Header: React.FC = () => {
               )}
             </div>
           ) : (
-            <Link to="/login" className="hidden sm:inline bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" aria-label="Login">
+            <Link to="/login" className="hidden sm:inline bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-2 rounded-lg hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 font-semibold" aria-label="Login">
               Login
             </Link>
           )}

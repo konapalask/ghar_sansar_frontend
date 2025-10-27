@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useBlogs, Blog } from "../../context/BlogContext";
 import axios from "axios";
 
-const API_DELETE = "https://lx70r6zsef.execute-api.ap-south-1.amazonaws.com/prod/api/storage/uploads/blog";
+const API_DELETE = "https://lx70r6zsef.execute-api.ap-south-1.amazonaws.com/prod/api/storage/upload/blog";
 
 const BlogAdmin: React.FC = () => {
   const { blogs, addBlog, refreshBlogs } = useBlogs()!;

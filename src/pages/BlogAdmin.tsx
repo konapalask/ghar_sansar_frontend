@@ -46,12 +46,15 @@ const BlogAdmin: React.FC = () => {
   const fetchCategoriesAndBlogs = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE}/storage/uploads/blog`);
+      const res = await fetch(`${API_BASE}/storage/upload/blog`);
       const data = await res.json();
+
+      // Handle new API structure with data.data array
+      const categories = data.data || data.categories || [];
 
       // Categories
       setCategories(
-        data.categories?.map((cat: any) => ({
+        categories?.map((cat: any) => ({
           name: cat.name,
           subcategories: cat.subcategories?.map((sub: any) => ({ name: sub.name })) || [],
         })) || []
@@ -59,7 +62,7 @@ const BlogAdmin: React.FC = () => {
 
       // Blogs
       const allBlogs: BlogPost[] = [];
-      data.categories?.forEach((cat: any) => {
+      categories?.forEach((cat: any) => {
         cat.subcategories?.forEach((sub: any) => {
           sub.images?.forEach((img: any, idx: number) => {
             allBlogs.push({
@@ -115,7 +118,7 @@ const BlogAdmin: React.FC = () => {
       formData.append("video", form.video || "");
       if (form.image instanceof File) formData.append("image", form.image);
 
-      const res = await fetch(`${API_BASE}/storage/uploads`, {
+      const res = await fetch(`${API_BASE}/storage/upload`, {
         method: "POST",
         body: formData,
       });
@@ -144,7 +147,7 @@ const BlogAdmin: React.FC = () => {
     if (!confirm("Are you sure?")) return;
     try {
       const res = await fetch(
-        `${API_BASE}/storage/uploads/blog?category_name=${category_name}&subcategory_name=${subcategory_name}&id=${id}`,
+        `${API_BASE}/storage/upload/blog?category_name=${category_name}&subcategory_name=${subcategory_name}&id=${id}`,
         { method: "DELETE" }
       );
       if (!res.ok) throw new Error("Delete failed");
