@@ -17,8 +17,9 @@ interface Product {
 
 // Category type
 interface Category {
+  cat_id: string;
   name: string;
-  subcategories: { name: string }[];
+  subcategories: { sub_id: string; name: string }[];
 }
 
 // Fix CloudFront/S3 URLs or create object URL for File type images
@@ -29,7 +30,9 @@ const fixImageUrl = (url: string | File) => {
 };
 
 const ProductsAdmin: React.FC = () => {
-  const API_BASE = import.meta.env.VITE_AWS_API_URL || "https://lx70r6zsef.execute-api.ap-south-1.amazonaws.com/prod/api";
+  const API_BASE =
+    import.meta.env.VITE_AWS_API_URL ||
+    "https://lx70r6zsef.execute-api.ap-south-1.amazonaws.com/prod/api";
 
   const [products, setProducts] = useState<Product[]>([]);
   const [categoriesData, setCategoriesData] = useState<Category[]>([]);
@@ -44,8 +47,8 @@ const ProductsAdmin: React.FC = () => {
     price: "",
     actual_price: "",
     image: "" as string | File,
-    category: "products", // default
-    subCategory: "general",
+    category: "Idols", // default
+    subCategory: "Premium Line",
     features: [] as string[],
   });
 
@@ -59,53 +62,41 @@ const ProductsAdmin: React.FC = () => {
       if (!res.ok) throw new Error(`Failed to fetch products: ${res.status}`);
       const data = await res.json();
 
-      // Handle new API structure with data.data array
-      const categories = data.data || data.categories || [];
+      const categories = data.data || [];
 
+      // Store categories
       setCategoriesData(
-        Array.isArray(categories)
-          ? categories.map((cat: any) => ({
-              name: cat.name,
-              subcategories: Array.isArray(cat.subcategories)
-                ? cat.subcategories.map((sub: any) => ({ name: sub.name }))
-                : [],
-            }))
-          : []
+        categories.map((cat: any) => ({
+          cat_id: cat.cat_id,
+          name: cat.name,
+          subcategories: (cat.subcategories || []).map((sub: any) => ({
+            sub_id: sub.sub_id,
+            name: sub.name,
+          })),
+        }))
       );
 
+      // Flatten all products
       const allProducts: Product[] = [];
-      categories?.forEach((category: any) => {
+      categories.forEach((category: any) => {
         category.subcategories?.forEach((sub: any) => {
-          // Handle both 'products' and 'images' arrays
-          const items = sub.products || sub.images || [];
-          items.forEach((img: any, index: number) => {
-            // Log first item for debugging
-            if (index === 0 && allProducts.length === 0) {
-              console.log("First product item:", img);
-              console.log("Has ID:", !!img.id);
-              console.log("ID value:", img.id);
-            }
-            
-            // Generate a temporary ID if missing (for display only - won't work for delete/edit)
-            const productId = img.id || `temp-${category.name}-${sub.name}-${index}`;
-            
+          sub.products?.forEach((p: any) => {
             allProducts.push({
-              id: productId,
-              title: img.title || "Untitled Product",
-              description: img.description || "No description",
-              price: img.price?.toString() || "0",
-              actual_price: img.actual_price?.toString() || "0",
-              image: fixImageUrl(img.image),
-              video: img.video || "",
+              id: p.prod_id,
+              title: p.title || "Untitled Product",
+              description: p.description || "No description",
+              price: p.price?.toString() || "0",
+              actual_price: p["act-price"]?.toString() || "0",
+              image: fixImageUrl(p.image),
               category: category.name,
               subCategory: sub.name,
-              features: img.features || [],
             });
           });
         });
       });
 
       setProducts(allProducts);
+      console.log("✅ Loaded products:", allProducts.length);
     } catch (err) {
       console.error("❌ Error fetching products:", err);
       setProducts([]);
@@ -118,17 +109,24 @@ const ProductsAdmin: React.FC = () => {
     fetchCategoriesAndProducts();
   }, []);
 
-  // Handle image file selection
+  // Cleanup preview URLs
+  useEffect(() => {
+    return () => {
+      if (preview) URL.revokeObjectURL(preview);
+    };
+  }, [preview]);
+
+  // Handle image selection
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setPreview(URL.createObjectURL(file));
       setForm({ ...form, image: file });
-      setExistingImageUrl(null); // clear existing URL preview on new file select
+      setExistingImageUrl(null);
     }
   };
 
-  // Submit handler for create & update
+  // Handle form submit (Add or Update)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title || !form.price || (!form.image && !existingImageUrl)) {
@@ -139,45 +137,28 @@ const ProductsAdmin: React.FC = () => {
     try {
       let res: Response;
 
+      // 🟢 UPDATE PRODUCT
       if (editingId) {
-        // Check if editing a temporary ID
-        if (editingId.startsWith('temp-')) {
-          alert("Cannot edit: This product doesn't have a valid UUID from the backend.");
-          return;
-        }
-
-        // Update product with URLSearchParams for application/x-www-form-urlencoded
+        console.log("Updating product ID:", editingId);
         const params = new URLSearchParams();
-
-        params.append("category_name", form.category);
-        params.append("subcategory_name", form.subCategory);
         params.append("id", editingId);
         params.append("title", form.title);
         params.append("price", form.price);
         params.append("actual_price", form.actual_price || "0");
         params.append("description", form.description);
-        form.features.forEach((feat) => params.append("features", feat));
+        params.append("category_name", form.category);
+        params.append("subcategory_name", form.subCategory);
 
-        console.log("Updating product with ID:", editingId);
-        console.log("Update params:", params.toString());
-
-        res = await fetch(`${API_BASE}/storage/uploads/products`, {
+        res = await fetch(`${API_BASE}/storage/upload/products`, {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-          },
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: params.toString(),
         });
-
-        console.log("Update response status:", res.status);
-        if (!res.ok) {
-          const errText = await res.text();
-          console.error("Update failed:", errText);
-        }
-      } else {
-        // Create new product with FormData, multipart/form-data
+      } 
+      
+      // 🟣 CREATE PRODUCT
+      else {
         const formData = new FormData();
-
         formData.append("category_type", "products");
         formData.append("category_name", form.category);
         formData.append("subcategory_name", form.subCategory);
@@ -185,8 +166,6 @@ const ProductsAdmin: React.FC = () => {
         formData.append("price", form.price);
         formData.append("actual_price", form.actual_price || "0");
         formData.append("description", form.description);
-        formData.append("features", form.features?.join(",") || "");
-
         if (form.image instanceof File) {
           formData.append("image", form.image);
         }
@@ -195,29 +174,25 @@ const ProductsAdmin: React.FC = () => {
           method: "POST",
           body: formData,
         });
-
-        console.log("Create response status:", res.status);
-        if (!res.ok) {
-          const errText = await res.text();
-          console.error("Create failed:", errText);
-        }
       }
 
       if (!res.ok) {
         const errText = await res.text();
-        throw new Error(`Upload failed: ${errText}`);
+        throw new Error(errText);
       }
 
       await fetchCategoriesAndProducts();
+      alert(editingId ? "✅ Product updated!" : "✅ Product added!");
 
+      // Reset form
       setForm({
         title: "",
         description: "",
         price: "",
         actual_price: "",
         image: "",
-        category: categoriesData[0]?.name || "products",
-        subCategory: categoriesData[0]?.subcategories[0]?.name || "general",
+        category: categoriesData[0]?.name || "Idols",
+        subCategory: categoriesData[0]?.subcategories[0]?.name || "Premium Line",
         features: [],
       });
       setPreview(null);
@@ -225,87 +200,54 @@ const ProductsAdmin: React.FC = () => {
       setEditingId(null);
     } catch (err) {
       console.error("❌ Error uploading product:", err);
-      alert("Upload failed. Check console.");
+      alert("Upload failed. Check console for details.");
     }
   };
 
-  // Edit product: load data into form
+  // Edit Product
   const handleEdit = (id: string) => {
-    // Check if this is a temporary ID
-    if (id.startsWith('temp-')) {
-      alert("Cannot edit: This product doesn't have a valid UUID from the backend.");
-      return;
-    }
-
     const p = products.find((p) => p.id === id);
     if (!p) {
       alert("Product not found!");
       return;
     }
 
-    console.log("Editing product with ID:", id);
-    console.log("Product data:", p);
-
     setForm({
       title: p.title,
       description: p.description,
       price: p.price,
       actual_price: p.actual_price || "",
-      image: "", // clear image file input value
+      image: "",
       category: p.category,
       subCategory: p.subCategory,
       features: p.features || [],
     });
     setPreview(null);
-    setExistingImageUrl(fixImageUrl(p.image)); // Show existing image preview
+    setExistingImageUrl(fixImageUrl(p.image));
     setEditingId(id);
 
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Delete product handler
+  // Delete product
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this product?")) return;
 
-    const product = products.find((p) => p.id === id);
-    if (!product) {
-      alert("Product not found!");
-      return;
-    }
-
-    // Check if this is a temporary ID (doesn't start with UUID format)
-    if (id.startsWith('temp-')) {
-      alert("Cannot delete: This product doesn't have a valid UUID from the backend.");
-      return;
-    }
-
     try {
-      const query = new URLSearchParams({
-        category_name: product.category,
-        subcategory_name: product.subCategory,
-        id: id,
-      }).toString();
-
-      console.log("Deleting product with ID:", id);
-      console.log("Delete URL:", `${API_BASE}/storage/uploads/products?${query}`);
-
-      const res = await fetch(`${API_BASE}/storage/uploads/products?${query}`, {
+      const res = await fetch(`${API_BASE}/storage/uploads/products?id=${id}`, {
         method: "DELETE",
       });
 
-      console.log("Delete response status:", res.status);
-      
       if (!res.ok) {
         const errText = await res.text();
-        console.error("Delete failed response:", errText);
-        throw new Error(`Delete failed: ${errText}`);
+        throw new Error(errText);
       }
 
-      alert("Product deleted successfully!");
+      alert("🗑️ Product deleted successfully!");
       await fetchCategoriesAndProducts();
     } catch (err) {
-      alert("Delete failed. Check console for details.");
       console.error("❌ Error deleting product:", err);
+      alert("Delete failed. Check console for details.");
     }
   };
 
@@ -313,6 +255,7 @@ const ProductsAdmin: React.FC = () => {
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">Admin: Manage Products</h1>
 
+      {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-3 border p-4 rounded-md">
         <input
           type="text"
@@ -359,12 +302,13 @@ const ProductsAdmin: React.FC = () => {
               className="border p-2 w-full"
             >
               {categoriesData.map((cat) => (
-                <option key={cat.name} value={cat.name}>
+                <option key={cat.cat_id} value={cat.name}>
                   {cat.name}
                 </option>
               ))}
             </select>
           </div>
+
           <div className="flex-1">
             <label className="block font-medium mb-1">Subcategory</label>
             <select
@@ -375,7 +319,7 @@ const ProductsAdmin: React.FC = () => {
               {categoriesData
                 .find((c) => c.name === form.category)
                 ?.subcategories.map((sub) => (
-                  <option key={sub.name} value={sub.name}>
+                  <option key={sub.sub_id} value={sub.name}>
                     {sub.name}
                   </option>
                 ))}
@@ -387,17 +331,16 @@ const ProductsAdmin: React.FC = () => {
           <label className="block font-medium mb-1">Product Image</label>
           <input type="file" accept="image/*" onChange={handleImageChange} />
           {preview ? (
-            <div className="aspect-video w-full bg-gray-100 rounded overflow-hidden mt-2">
-              <img src={preview} alt="Preview" className="w-full h-full object-contain" />
-            </div>
+            <img src={preview} alt="Preview" className="w-full h-auto mt-2 rounded" />
           ) : existingImageUrl ? (
-            <div className="aspect-video w-full bg-gray-100 rounded overflow-hidden mt-2">
-              <img src={existingImageUrl} alt="Existing Image" className="w-full h-full object-contain" />
-            </div>
+            <img src={existingImageUrl} alt="Existing" className="w-full h-auto mt-2 rounded" />
           ) : null}
         </div>
 
-        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded flex items-center">
+        <button
+          type="submit"
+          className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
+        >
           {editingId ? (
             <>
               <Save className="w-4 h-4 mr-2" /> Update Product
@@ -410,52 +353,34 @@ const ProductsAdmin: React.FC = () => {
         </button>
       </form>
 
+      {/* Product Grid */}
       <h2 className="text-xl font-semibold">Existing Products</h2>
       {loading ? (
         <p>Loading products...</p>
-      ) : Array.isArray(products) && products.length > 0 ? (
+      ) : products.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {products.map((p) => {
-            const isTempId = p.id.startsWith('temp-');
-            return (
-              <div key={p.id} className={`border rounded p-3 shadow-sm ${isTempId ? 'bg-yellow-50 border-yellow-300' : ''}`}>
-                {isTempId && (
-                  <div className="bg-yellow-200 text-yellow-800 text-xs font-semibold px-2 py-1 rounded mb-2">
-                    ⚠️ No UUID - Cannot Edit/Delete
-                  </div>
-                )}
-                {p.image && (
-                  <div className="aspect-video w-full bg-gray-100 rounded overflow-hidden mb-2">
-                    <img src={fixImageUrl(p.image)} alt={p.title} className="w-full h-full object-contain" />
-                  </div>
-                )}
-                {p.video && (
-                  <video controls className="aspect-video w-full rounded mb-2 bg-black">
-                    <source src={fixImageUrl(p.video)} />
-                  </video>
-                )}
-                <h3 className="font-bold">{p.title}</h3>
-                <p className="text-sm text-gray-600">{p.description}</p>
-                <p className="text-lg font-semibold">₹{p.price}</p>
-                <div className="flex space-x-2 mt-2">
-                  <button 
-                    onClick={() => handleEdit(p.id)} 
-                    disabled={isTempId}
-                    className={`${isTempId ? 'bg-gray-300 cursor-not-allowed' : 'bg-yellow-500 hover:bg-yellow-600'} text-white px-2 py-1 rounded flex items-center`}
-                  >
-                    <Edit3 className="w-4 h-4 mr-1" /> Edit
-                  </button>
-                  <button 
-                    onClick={() => handleDelete(p.id)} 
-                    disabled={isTempId}
-                    className={`${isTempId ? 'bg-gray-300 cursor-not-allowed' : 'bg-red-500 hover:bg-red-600'} text-white px-2 py-1 rounded flex items-center`}
-                  >
-                    <Trash2 className="w-4 h-4 mr-1" /> Delete
-                  </button>
-                </div>
+          {products.map((p) => (
+            <div key={p.id} className="border rounded p-3 shadow-sm">
+              <img src={fixImageUrl(p.image)} alt={p.title} className="rounded mb-2 w-full" />
+              <h3 className="font-bold">{p.title}</h3>
+              <p className="text-sm text-gray-600">{p.description}</p>
+              <p className="text-lg font-semibold">₹{p.price}</p>
+              <div className="flex space-x-2 mt-2">
+                <button
+                  onClick={() => handleEdit(p.id)}
+                  className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded flex items-center"
+                >
+                  <Edit3 className="w-4 h-4 mr-1" /> Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(p.id)}
+                  className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded flex items-center"
+                >
+                  <Trash2 className="w-4 h-4 mr-1" /> Delete
+                </button>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       ) : (
         <p className="text-gray-500">No products found.</p>

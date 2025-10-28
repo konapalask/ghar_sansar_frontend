@@ -20,7 +20,7 @@ interface ProductContextType {
   error: string | null;
   addProduct: (p: Partial<Product> & { imageFile?: File }) => Promise<void>;
   updateProduct: (id: string, p: Partial<Product> & { imageFile?: File }) => Promise<void>;
-  deleteProduct: (id: string, category: string, subCategory: string) => Promise<void>;
+  deleteProduct: (id: string, category_type: string) => Promise<void>;
 }
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
@@ -123,18 +123,22 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
   const addProduct = async (p: Partial<Product> & { imageFile?: File }) => {
     try {
       const formData = new FormData();
-      formData.append("category_type", "products");
-      formData.append("category_name", p.category!);
-      formData.append("subcategory_name", p.subCategory!);
-      formData.append("title", p.title!);
+      formData.append("category_name", p.category || "");
+      formData.append("subcategory_name", p.subCategory || "");
+      formData.append("title", p.title || "");
       formData.append("price", (p.price ?? 0).toString());
       formData.append("actual_price", (p.actualPrice ?? 0).toString());
-      formData.append("description", p.description ?? "");
-      formData.append("features", "");
+      formData.append("description", p.description || "");
+      if (p.video) formData.append("video", p.video);
 
-      if (p.imageFile) formData.append("image", p.imageFile, p.imageFile.name.replace(/\s/g, "-"));
+      if (p.imageFile) {
+        formData.append("image", p.imageFile, p.imageFile.name.replace(/\s/g, "-"));
+      }
 
-      await axios.post(`${API_BASE}/storage/upload`, formData);
+      await axios.post(`${API_BASE}/storage/uploads/products`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
       await fetchProducts();
     } catch (err) {
       console.error("Error adding product:", err);
@@ -145,31 +149,35 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
   const updateProduct = async (id: string, p: Partial<Product> & { imageFile?: File }) => {
     try {
       const formData = new FormData();
-      formData.append("category_type", "products");
       formData.append("id", id);
-      formData.append("category_name", p.category!);
-      formData.append("subcategory_name", p.subCategory!);
-      formData.append("title", p.title!);
-      formData.append("price", (p.price ?? 0).toString());
-      formData.append("actual_price", (p.actualPrice ?? 0).toString());
-      formData.append("description", p.description ?? "");
-      formData.append("features", "");
+      formData.append("category_name", p.category || "");
+      formData.append("subcategory_name", p.subCategory || "");
+      formData.append("title", p.title || "");
+      formData.append("price", Math.floor(p.price ?? 0).toString());
+      formData.append("actual_price", Math.floor(p.actualPrice ?? 0).toString());
+      formData.append("description", p.description || "");
+      if (p.video) formData.append("video", p.video);
 
-      if (p.imageFile) formData.append("image", p.imageFile, p.imageFile.name.replace(/\s/g, "-"));
+      if (p.imageFile) {
+        formData.append("image", p.imageFile, p.imageFile.name.replace(/\s/g, "-"));
+      }
 
-      await axios.put(`${API_BASE}/storage/uploads/products`, formData);
+      await axios.put(`${API_BASE}/storage/uploads/products`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
       await fetchProducts();
     } catch (err) {
       console.error("Error updating product:", err);
     }
   };
 
+
+
   // Delete product
-  const deleteProduct = async (id: string, category: string, subCategory: string) => {
+  const deleteProduct = async (id: string) => {
     try {
-      await axios.delete(
-        `${API_BASE}/storage/uploads/products?category_name=${category}&subcategory_name=${subCategory}&id=${id}`
-      );
+      await axios.delete(`${API_BASE}/storage/uploads/products?id=${id}`);
       setProducts((prev) => prev.filter((prod) => prod.id !== id));
     } catch (err) {
       console.error("Error deleting product:", err);

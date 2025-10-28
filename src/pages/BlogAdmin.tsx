@@ -49,37 +49,20 @@ const BlogAdmin: React.FC = () => {
       const res = await fetch(`${API_BASE}/storage/upload/blog`);
       const data = await res.json();
 
-      // Handle new API structure with data.data array
-      const categories = data.data || data.categories || [];
+      // Map the flat data array directly to BlogPost
+      const blogData: BlogPost[] = (data.data || []).map((item: any) => ({
+        id: item.id,
+        title: item.title || "Untitled",
+        description: item.description || "",
+        image: "", // No image in API response
+        video: item.video || "",
+      }));
 
-      // Categories
-      setCategories(
-        categories?.map((cat: any) => ({
-          name: cat.name,
-          subcategories: cat.subcategories?.map((sub: any) => ({ name: sub.name })) || [],
-        })) || []
-      );
+      setBlogs(blogData);
 
-      // Blogs
-      const allBlogs: BlogPost[] = [];
-      categories?.forEach((cat: any) => {
-        cat.subcategories?.forEach((sub: any) => {
-          sub.images?.forEach((img: any, idx: number) => {
-            allBlogs.push({
-              id: img.id,
-              title: img.title || "Untitled",
-              description: img.description || "",
-              image: fixUrl(img.image),
-              video: img.video,
-              category: cat.name,
-              subCategory: sub.name,
-              features: img.features || [],
-            });
-          });
-        });
-      });
+      // Since no categories exist, just set a default
+      setCategories([{ name: "general", subcategories: [{ name: "general" }] }]);
 
-      setBlogs(allBlogs);
     } catch (err) {
       console.error("Error fetching blogs:", err);
       setBlogs([]);
