@@ -72,7 +72,8 @@ npm run cap:open     # Open in Android Studio
 
 - **Platform**: Vercel
 - **Status**: ✅ Deployed
-- **URL**: https://gharsansar-frontend.vercel.app
+- **Live Website**: https://www.gharsansar.store
+- **Admin Panel**: https://www.gharsansar.store/admin
 
 ## 📚 Documentation
 

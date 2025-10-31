@@ -3,7 +3,7 @@
 ## Easiest Method: PWABuilder (No Software Installation Needed!)
 
 1. **Visit**: https://www.pwabuilder.com/
-2. **Enter URL**: Your deployed Vercel URL
+2. **Enter URL**: `https://www.gharsansar.store`
 3. **Click**: "Start"
 4. **Select**: Android platform
 5. **Download**: APK file

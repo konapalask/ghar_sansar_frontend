@@ -4,12 +4,12 @@
 
 ### Using PWABuilder (Recommended - NO Software Installation!)
 
-**Your Website URL**: `https://gharsansar-frontend.vercel.app`
+**Your Website URL**: `https://www.gharsansar.store`
 
 1. **Open Browser**: Go to [https://www.pwabuilder.com/](https://www.pwabuilder.com/)
 
 2. **Enter Your URL**: 
-   - In the text box, paste: `https://gharsansar-frontend.vercel.app`
+   - In the text box, paste: `https://www.gharsansar.store`
    - Click **"Start"** button
 
 3. **Choose Platform**:
@@ -56,7 +56,7 @@
 **Even Easier**: Share the website URL!
 
 **Steps for Your Users**:
-1. Open: `https://gharsansar-frontend.vercel.app` in Chrome on Android
+1. Open: `https://www.gharsansar.store` in Chrome on Android
 2. Tap menu (3 dots ⋮)
 3. Tap **"Add to Home Screen"** or **"Install App"**
 4. App installed! Works like native app! ✨
@@ -81,7 +81,7 @@
 
 ## 📋 Important Notes
 
-- ✅ Your website is already deployed at: `https://gharsansar-frontend.vercel.app`
+- ✅ Your website is live at: `https://www.gharsansar.store`
 - ✅ Mobile UI is fully responsive and optimized
 - ✅ All features work perfectly on mobile
 - ✅ Admin panel accessible at: `/admin`
@@ -92,7 +92,7 @@
 ## 🔐 Admin Access
 
 If you need to manage content:
-- URL: `https://gharsansar-frontend.vercel.app/admin`
+- URL: `https://www.gharsansar.store/admin`
 - Email: `gharsansarshop@gmail.com`
 - Password: `GharStack@07`
 

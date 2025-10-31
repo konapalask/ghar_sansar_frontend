@@ -113,7 +113,7 @@ Since building APKs requires Android Studio setup, you can use online services:
 
 Use **PWABuilder**:
 1. Visit: https://www.pwabuilder.com/
-2. Enter your Vercel URL: `https://gharsansar-frontend.vercel.app`
+2. Enter your website URL: `https://www.gharsansar.store`
 3. Click "Start"
 4. Click "Android" platform
 5. Download the APK
