@@ -1,8 +1,9 @@
 import React, { useMemo, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Search } from "lucide-react";
+import { Search, ShoppingCart, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import { useProducts } from "../context/ProductContext";
+import { useCart } from "../context/CartContext";
 
 // Helper for query params
 function useQuery() {
@@ -22,6 +23,7 @@ const handwritingStyle = "font-bold italic font-cursive";
 
 const ProductsPage = () => {
   const { products, loading, error } = useProducts();
+  const { addToCart } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
   const query = useQuery();
@@ -199,6 +201,58 @@ const ProductsPage = () => {
               <p className="text-xs sm:text-sm text-gray-500 font-bold italic font-cursive">
                 {formatName(p.category)} / {formatName(p.subCategory)}
               </p>
+              
+              {/* Price and Buttons */}
+              <div className="mt-3 space-y-2">
+                {p.price ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl font-bold text-blue-600">₹{p.price}</span>
+                    {p.actualPrice && p.actualPrice > p.price && (
+                      <span className="text-sm text-gray-500 line-through">₹{p.actualPrice}</span>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-600">Contact for Price</p>
+                )}
+                
+                <div className="flex gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (p.price) {
+                        addToCart({
+                          id: p.id,
+                          name: p.title,
+                          price: p.price,
+                          image: p.image
+                        });
+                      }
+                    }}
+                    className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
+                  >
+                    <ShoppingCart className="w-4 h-4" />
+                    Cart
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (p.price) {
+                        addToCart({
+                          id: p.id,
+                          name: p.title,
+                          price: p.price,
+                          image: p.image
+                        });
+                        navigate('/checkout');
+                      }
+                    }}
+                    className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-colors"
+                  >
+                    <Zap className="w-4 h-4" />
+                    Buy
+                  </button>
+                </div>
+              </div>
             </motion.div>
           ))}
         </div>

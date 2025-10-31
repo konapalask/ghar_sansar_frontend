@@ -6,6 +6,8 @@ import { ProductProvider } from "./context/ProductContext";
 import { BlogProvider } from "./context/BlogContext";
 import { ServiceProvider } from "./context/ServiceContext";
 import { InteriorProvider } from "./context/InteriorContext";
+import { PaymentProvider } from "./context/PaymentContext";
+import { OrderProvider } from "./context/OrderContext";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import ScrollToTop from "./components/ScrollToTop";
@@ -46,12 +48,14 @@ export default function App() {
           <BlogProvider>
             <ServiceProvider>
               <InteriorProvider>
-                <BrowserRouter>
-                  <ScrollToTop />
-                  <div className="min-h-screen bg-gray-50">
-                    <Header />
-                    <main className="pt-20">
-                      <Routes>
+                <PaymentProvider>
+                  <OrderProvider>
+                    <BrowserRouter>
+                      <ScrollToTop />
+                      <div className="min-h-screen bg-gray-50">
+                        <Header />
+                        <main className="pt-20">
+                          <Routes>
                         {/* ---------- Public routes ---------- */}
                         <Route path="/" element={<Home />} />
                         <Route path="/products" element={<ProductsPage />} />
@@ -106,6 +110,8 @@ export default function App() {
                     <ChatBot />
                   </div>
                 </BrowserRouter>
+                  </OrderProvider>
+                </PaymentProvider>
               </InteriorProvider>
             </ServiceProvider>
           </BlogProvider>

@@ -1,13 +1,16 @@
 // src/pages/Home.tsx
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { ArrowRight, Truck, Shield, Headphones, XCircle, Eye, Palette, HandHeart, CheckCircle, Home as HomeIcon } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowRight, Truck, Shield, Headphones, XCircle, Eye, Palette, HandHeart, CheckCircle, Home as HomeIcon, ShoppingCart, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import { useProducts } from "../context/ProductContext"; // ✅ using context
+import { useCart } from "../context/CartContext";
 import axios from "axios";
 
 const Home: React.FC = () => {
   const { products } = useProducts();
+  const { addToCart } = useCart();
+  const navigate = useNavigate();
   
   // State for interior categories
   const [interiorCategories, setInteriorCategories] = useState<any[]>([]);
@@ -430,6 +433,51 @@ const Home: React.FC = () => {
                     <h3 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
                       {product.title}
                     </h3>
+                    {product.price && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className="text-lg font-bold text-blue-600">₹{product.price}</span>
+                        {product.actualPrice && product.actualPrice > product.price && (
+                          <span className="text-sm text-gray-500 line-through">₹{product.actualPrice}</span>
+                        )}
+                      </div>
+                    )}
+                    <div className="flex gap-2 mt-3">
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (product.price) {
+                            addToCart({
+                              id: product.id,
+                              name: product.title,
+                              price: product.price,
+                              image: product.image
+                            });
+                          }
+                        }}
+                        className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
+                      >
+                        <ShoppingCart className="w-4 h-4" />
+                        Cart
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (product.price) {
+                            addToCart({
+                              id: product.id,
+                              name: product.title,
+                              price: product.price,
+                              image: product.image
+                            });
+                            navigate('/checkout');
+                          }
+                        }}
+                        className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-colors"
+                      >
+                        <Zap className="w-4 h-4" />
+                        Buy
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               ))}
