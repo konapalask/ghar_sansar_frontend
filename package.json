@@ -7,9 +7,14 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "cap:build": "npm run build && npx cap sync android",
+    "cap:open": "npx cap open android"
   },
   "dependencies": {
+    "@capacitor/android": "^7.4.4",
+    "@capacitor/cli": "^7.4.4",
+    "@capacitor/core": "^7.4.4",
     "@headlessui/react": "^2.2.7",
     "axios": "^1.11.0",
     "framer-motion": "^12.23.12",

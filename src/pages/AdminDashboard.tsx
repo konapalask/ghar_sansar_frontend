@@ -21,11 +21,13 @@ const AdminDashboard: React.FC = () => {
   const { blogs, loading: blogsLoading } = useBlogs();
   const { works, loading: interiorLoading } = useInterior();
 
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentTime, setCurrentTime] = useState<string>("Loading...");
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const timer = setInterval(() => {
-      setCurrentTime(new Date());
+      setCurrentTime(new Date().toLocaleString());
     }, 1000);
     return () => clearInterval(timer);
   }, []);
@@ -92,7 +94,7 @@ const AdminDashboard: React.FC = () => {
         <div className="flex flex-wrap items-center gap-4 text-gray-600">
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4" />
-            <span>{currentTime.toLocaleString()}</span>
+            <span>{mounted ? currentTime : "--:--:--"}</span>
           </div>
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4" />
