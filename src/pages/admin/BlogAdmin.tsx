@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const API_DELETE = "https://lx70r6zsef.execute-api.ap-south-1.amazonaws.com/prod/api/storage/upload/blog";
 
 const BlogAdmin: React.FC = () => {
-  const { blogs, addBlog, refreshBlogs } = useBlogs()!;
+  const { blogs, addBlog, refreshBlogs } = useBlogs();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
