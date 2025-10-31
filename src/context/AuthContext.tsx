@@ -35,7 +35,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       // Only allow exact admin credentials to login
-      if (email === "gharsansarshop@gmail.com" && password === "G8121135980r@") {
+      if (email === "gharsansarshop@gmail.com" && password === "GharStack@07") {
         const adminUser: User = {
           email,
           role: "admin",

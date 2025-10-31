@@ -142,19 +142,34 @@ const Header: React.FC = () => {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-lg shadow-lg border-b border-gray-100 h-16 flex items-center px-3 sm:px-6 w-full min-w-0">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl shadow-professional border-b border-gray-200/50 h-20 flex items-center px-3 sm:px-6 w-full min-w-0">
         {/* Logo */}
         <Link to="/" aria-label="Go to home" className="flex items-center space-x-2 ml-2 sm:ml-4 shrink-0 hover:opacity-80 transition-opacity">
           <img src="/ghar sansar logo.svg" alt="Ghar Sansar Logo" className="w-20 h-20 sm:w-40 sm:h-20 object-contain" style={{ minWidth: 0 }} />
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 space-x-6 font-medium text-gray-700" role="navigation">
-          {location.pathname !== "/" && <Link to="/" className="hover:text-blue-600 transition-colors duration-200 font-semibold">Home</Link>}
-          <Link to="/interior-design" className="hover:text-blue-600 transition-colors duration-200 font-semibold">Interior Design</Link>
-          <Link to="/products" className="hover:text-blue-600 transition-colors duration-200 font-semibold">Products</Link>
-          <Link to="/services" className="hover:text-blue-600 transition-colors duration-200 font-semibold">Services</Link>
-          <Link to="/blog" className="hover:text-blue-600 transition-colors duration-200 font-semibold">Blog</Link>
+        <nav className="hidden md:flex absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 space-x-8 font-display font-semibold text-gray-700" role="navigation">
+          {location.pathname !== "/" && <Link to="/" className="relative hover:text-primary-600 transition-all duration-300 font-semibold group">
+            Home
+            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-600 transition-all duration-300 group-hover:w-full"></span>
+          </Link>}
+          <Link to="/interior-design" className="relative hover:text-primary-600 transition-all duration-300 font-semibold group">
+            Interior Design
+            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-600 transition-all duration-300 group-hover:w-full"></span>
+          </Link>
+          <Link to="/products" className="relative hover:text-primary-600 transition-all duration-300 font-semibold group">
+            Products
+            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-600 transition-all duration-300 group-hover:w-full"></span>
+          </Link>
+          <Link to="/services" className="relative hover:text-primary-600 transition-all duration-300 font-semibold group">
+            Services
+            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-600 transition-all duration-300 group-hover:w-full"></span>
+          </Link>
+          <Link to="/blog" className="relative hover:text-primary-600 transition-all duration-300 font-semibold group">
+            Blog
+            <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary-600 transition-all duration-300 group-hover:w-full"></span>
+          </Link>
         </nav>
 
         {/* Right side */}
@@ -288,7 +303,7 @@ const Header: React.FC = () => {
               )}
             </div>
           ) : (
-            <Link to="/login" className="hidden sm:inline bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-2 rounded-lg hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 font-semibold" aria-label="Login">
+            <Link to="/login" className="hidden sm:inline bg-gradient-to-r from-primary-600 to-primary-700 text-white px-6 py-3 rounded-xl hover:from-primary-700 hover:to-primary-800 shadow-professional hover:shadow-professional-lg transition-all duration-300 font-semibold hover:scale-105 active:scale-95" aria-label="Login">
               Login
             </Link>
           )}

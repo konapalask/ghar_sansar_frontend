@@ -1,6 +1,7 @@
 import React, { useMemo, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
+import { motion } from "framer-motion";
 import { useProducts } from "../context/ProductContext";
 
 // Helper for query params
@@ -103,14 +104,24 @@ const ProductsPage = () => {
 
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto bg-white min-h-screen font-sans">
-      <h1 className="text-3xl md:text-5xl font-bold italic font-cursive mb-6">
+      <motion.h1 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="text-3xl md:text-5xl font-bold italic font-cursive mb-6"
+      >
         Products by Gharsansar
-      </h1>
+      </motion.h1>
 
       {/* Filters */}
-      <div className="flex flex-col md:flex-row items-start md:items-center gap-3 mb-6">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+        className="flex flex-col md:flex-row items-start md:items-center gap-3 mb-6"
+      >
         {/* Search */}
-        <div className="flex items-center border rounded px-3 py-2 w-full md:max-w-xs bg-white">
+        <div className="flex items-center border rounded px-3 py-2 w-full md:max-w-xs bg-white shadow-sm hover:shadow-md transition-shadow">
           <Search size={18} className="text-gray-400 mr-2" />
           <input
             type="search"
@@ -123,7 +134,7 @@ const ProductsPage = () => {
 
         {/* Category Filter */}
         <select
-          className="border rounded px-3 py-2 text-sm font-serif italic"
+          className="border rounded px-3 py-2 text-sm font-serif italic hover:shadow-md transition-shadow cursor-pointer"
           value={categoryFilter}
           onChange={(e) => updateQuery({ category: e.target.value, subCategory: "All", page: 1 })}
         >
@@ -136,7 +147,7 @@ const ProductsPage = () => {
 
         {/* Subcategory Filter */}
         <select
-          className={`border rounded px-3 py-2 text-sm ${handwritingStyle}`}
+          className={`border rounded px-3 py-2 text-sm ${handwritingStyle} hover:shadow-md transition-shadow cursor-pointer`}
           value={subCategoryFilter}
           onChange={(e) => updateQuery({ subCategory: e.target.value, page: 1 })}
         >
@@ -146,12 +157,12 @@ const ProductsPage = () => {
             </option>
           ))}
         </select>
-      </div>
+      </motion.div>
 
       {/* Products Grid */}
       {loading ? (
         <div className="flex justify-center items-center py-12">
-          <div className="text-xl text-gray-600">Loading products...</div>
+          <div className="spinner"></div>
         </div>
       ) : error ? (
         <div className="flex flex-col justify-center items-center py-12">
@@ -159,46 +170,65 @@ const ProductsPage = () => {
           <div className="text-sm text-gray-500">{error}</div>
         </div>
       ) : currentProducts.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
-          {currentProducts.map((p) => (
-            <div
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
+          {currentProducts.map((p, index) => (
+            <motion.div
               key={p.id}
-              className="border rounded-lg shadow hover:shadow-lg transition p-3 cursor-pointer"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
+              whileHover={{ scale: 1.05, y: -5 }}
+              className="border rounded-lg shadow hover:shadow-xl transition-all duration-300 p-3 cursor-pointer bg-white group overflow-hidden"
               onClick={() => navigate(`/product/${encodeURIComponent(p.id)}?${location.search}`)}
             >
-              {p.image ? (
-                <img
-                  src={p.image}
-                  alt={p.title}
-                  className="w-full h-60 sm:h-72 md:h-80 object-cover rounded-lg"
-                  loading="lazy"
-                />
-              ) : (
-                <div className="w-full h-60 sm:h-72 md:h-80 bg-gray-200 flex items-center justify-center rounded-lg">
-                  No Image
-                </div>
-              )}
-              <h2 className="text-lg font-semibold mt-2">{formatName(p.title || "Untitled")}</h2>
-              <p className="text-sm text-gray-500 font-bold italic font-cursive">
+              <div className="relative overflow-hidden rounded-lg">
+                {p.image ? (
+                  <img
+                    src={p.image}
+                    alt={p.title}
+                    className="w-full h-48 sm:h-60 md:h-72 object-cover rounded-lg group-hover:scale-110 transition-transform duration-500"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="w-full h-48 sm:h-60 md:h-72 bg-gray-200 flex items-center justify-center rounded-lg">
+                    No Image
+                  </div>
+                )}
+              </div>
+              <h2 className="text-base sm:text-lg font-semibold mt-2 line-clamp-2">{formatName(p.title || "Untitled")}</h2>
+              <p className="text-xs sm:text-sm text-gray-500 font-bold italic font-cursive">
                 {formatName(p.category)} / {formatName(p.subCategory)}
               </p>
-            </div>
+            </motion.div>
           ))}
         </div>
       ) : (
-        <p>No products found.</p>
+        <motion.p 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center py-12 text-gray-600"
+        >
+          No products found.
+        </motion.p>
       )}
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <nav className="flex flex-wrap justify-center gap-2 mt-8">
-          <button
+        <motion.nav 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="flex flex-wrap justify-center gap-2 mt-8"
+        >
+          <motion.button
             disabled={page === 1}
             onClick={() => updateQuery({ page: page - 1 })}
-            className="px-4 py-2 border rounded disabled:opacity-50 hover:bg-blue-600 hover:text-white transition"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="px-4 py-2 border rounded disabled:opacity-50 hover:bg-blue-600 hover:text-white transition-all font-semibold"
           >
             &lt; Previous
-          </button>
+          </motion.button>
 
           {getPageNumbers(page, totalPages, 1).map((p, idx) =>
             p === "..." ? (
@@ -206,26 +236,30 @@ const ProductsPage = () => {
                 …
               </span>
             ) : (
-              <button
+              <motion.button
                 key={`page-${p}`}
                 onClick={() => updateQuery({ page: p })}
-                className={`px-4 py-2 border rounded hover:bg-blue-600 hover:text-white transition ${
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`px-4 py-2 border rounded hover:bg-blue-600 hover:text-white transition-all font-semibold ${
                   page === p ? "bg-blue-600 text-white border-blue-600" : ""
                 }`}
               >
                 {p}
-              </button>
+              </motion.button>
             )
           )}
 
-          <button
+          <motion.button
             disabled={page === totalPages}
             onClick={() => updateQuery({ page: page + 1 })}
-            className="px-4 py-2 border rounded disabled:opacity-50 hover:bg-blue-600 hover:text-white transition"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="px-4 py-2 border rounded disabled:opacity-50 hover:bg-blue-600 hover:text-white transition-all font-semibold"
           >
             Next &gt;
-          </button>
-        </nav>
+          </motion.button>
+        </motion.nav>
       )}
     </div>
   );

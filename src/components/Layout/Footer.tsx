@@ -4,8 +4,22 @@ import { Facebook, Twitter, Instagram, Mail, Phone, MapPin, Youtube } from 'luci
 
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white border-t-4 border-blue-600">
+    <footer className="bg-gradient-to-br from-dark-900 via-dark-800 to-dark-900 text-white border-t-4 border-primary-600">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        {/* Service Areas Banner */}
+        <div className="text-center mb-12 pb-8 border-b border-gray-700">
+          <h3 className="text-2xl font-display font-bold mb-4 text-white">Service Areas</h3>
+          <p className="text-gray-300 text-lg mb-4">
+            Best Interior Designers serving across Andhra Pradesh & Telangana
+          </p>
+          <div className="flex flex-wrap justify-center gap-4 text-sm">
+            <span className="px-4 py-2 bg-primary-600 rounded-full font-semibold">Vijayawada</span>
+            <span className="px-4 py-2 bg-primary-700 rounded-full font-semibold">Guntur</span>
+            <span className="px-4 py-2 bg-primary-700 rounded-full font-semibold">Eluru</span>
+            <span className="px-4 py-2 bg-primary-700 rounded-full font-semibold">Andhra Pradesh</span>
+            <span className="px-4 py-2 bg-primary-700 rounded-full font-semibold">Telangana</span>
+          </div>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Company Info */}
           <div>
@@ -23,7 +37,7 @@ const Footer: React.FC = () => {
             <div className="flex space-x-4">
               <a
                 href="https://www.facebook.com/GharSansarshop/"
-                className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-blue-400 hover:bg-blue-400/10 rounded-full transition-all duration-200"
+                className="w-12 h-12 flex items-center justify-center text-gray-400 hover:text-white hover:bg-primary-600 rounded-xl transition-all duration-300 hover:scale-110 hover:shadow-lg"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Facebook"
@@ -33,7 +47,7 @@ const Footer: React.FC = () => {
 
               <a 
                 href="https://www.youtube.com/@gharsansar_shop" 
-                className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-blue-400 hover:bg-blue-400/10 rounded-full transition-all duration-200"
+                className="w-12 h-12 flex items-center justify-center text-gray-400 hover:text-white hover:bg-primary-600 rounded-xl transition-all duration-300 hover:scale-110 hover:shadow-lg"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="YouTube"
@@ -42,7 +56,7 @@ const Footer: React.FC = () => {
               </a>
               <a 
                 href="https://www.instagram.com/gharsansar_shop/" 
-                className="w-10 h-10 flex items-center justify-center text-gray-400 hover:text-blue-400 hover:bg-blue-400/10 rounded-full transition-all duration-200"
+                className="w-12 h-12 flex items-center justify-center text-gray-400 hover:text-white hover:bg-primary-600 rounded-xl transition-all duration-300 hover:scale-110 hover:shadow-lg"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Instagram"
@@ -54,7 +68,7 @@ const Footer: React.FC = () => {
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-xl font-bold mb-6 text-blue-400">Quick Links</h3>
+            <h3 className="text-xl font-display font-bold mb-6 text-primary-400">Quick Links</h3>
             <ul className="space-y-3">
               <li>
                 <Link to="/products" className="text-gray-400 hover:text-blue-400 transition-all duration-200 hover:translate-x-1 inline-block">
@@ -81,7 +95,7 @@ const Footer: React.FC = () => {
 
           {/* Categories */}
           <div>
-            <h3 className="text-xl font-bold mb-6 text-blue-400">Categories</h3>
+            <h3 className="text-xl font-display font-bold mb-6 text-primary-400">Categories</h3>
             <ul className="space-y-3">
               <li>
                 <a href="/interior-design" className="text-gray-400 hover:text-blue-400 transition-all duration-200 hover:translate-x-1 inline-block">
@@ -108,18 +122,18 @@ const Footer: React.FC = () => {
 
           {/* Contact Info */}
           <div>
-            <h3 className="text-xl font-bold mb-6 text-blue-400">Contact Us</h3>
+            <h3 className="text-xl font-display font-bold mb-6 text-primary-400">Contact Us</h3>
             <ul className="space-y-3">
-              <li className="flex items-center space-x-3">
-                <MapPin className="w-14 h-14 text-blue-400" />
+              <li className="flex items-start space-x-3">
+                <MapPin className="w-5 h-5 text-primary-400 mt-1 flex-shrink-0" />
                 <span className="text-gray-400">D.No: 27-14-60, Near Buckingham Post Office, Rajagopalachari Street, Governerpet-520002</span>
               </li>
               <li className="flex items-center space-x-3">
-                <Phone className="w-4 h-4 text-blue-400" />
+                <Phone className="w-5 h-5 text-primary-400 flex-shrink-0" />
                 <span className="text-gray-400">+91-8121135980</span>
               </li>
               <li className="flex items-center space-x-3">
-                <Mail className="w-4 h-4 text-blue-400" />
+                <Mail className="w-5 h-5 text-primary-400 flex-shrink-0" />
                 <span className="text-gray-400">gharsansarshop@gmail.com</span>
               </li>
             </ul>

@@ -23,6 +23,7 @@ import InteriorDesignPage from "./pages/InteriorDesignPage";
 import InteriorWorks from "./pages/InteriorWorks";
 
 // ✅ Admin pages
+import AdminDashboard from "./pages/AdminDashboard";
 import AdminLayout from "./pages/admin/AdminLayout";
 // import AdminEnquiryList from "./pages/admin/AdminEnquiryList";
 import BlogAdmin from "./pages/admin/BlogAdmin";
@@ -49,7 +50,7 @@ export default function App() {
                   <ScrollToTop />
                   <div className="min-h-screen bg-gray-50">
                     <Header />
-                    <main className="pt-16">
+                    <main className="pt-20">
                       <Routes>
                         {/* ---------- Public routes ---------- */}
                         <Route path="/" element={<Home />} />
@@ -91,6 +92,7 @@ export default function App() {
                             </ProtectedRoute>
                           }
                         >
+                          <Route index element={<AdminDashboard />} />
                           <Route path="blog-admin" element={<BlogAdmin />} />
                           {/* <Route path="enquiries" element={<AdminEnquiryList />} /> */}
                           <Route path="services-admin" element={<ServicesAdmin />} />

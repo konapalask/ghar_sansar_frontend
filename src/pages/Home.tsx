@@ -1,12 +1,46 @@
 // src/pages/Home.tsx
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Truck, Shield, Headphones, XCircle, Eye, Palette, HandHeart, CheckCircle, Home as HomeIcon, Wand2, Sparkles, Brush } from "lucide-react";
+import { ArrowRight, Truck, Shield, Headphones, XCircle, Eye, Palette, HandHeart, CheckCircle, Home as HomeIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { useProducts } from "../context/ProductContext"; // ✅ using context
+import axios from "axios";
 
 const Home: React.FC = () => {
   const { products } = useProducts();
+  
+  // State for interior categories
+  const [interiorCategories, setInteriorCategories] = useState<any[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  
+  // Fetch interior categories
+  useEffect(() => {
+    const fetchInteriorCategories = async () => {
+      try {
+        const res = await axios.get("https://lx70r6zsef.execute-api.ap-south-1.amazonaws.com/prod/api/storage/upload/interior");
+        const data = res.data;
+        
+        // Handle new JSON structure with data array
+        const categories = (data.data || []).map((cat: any) => ({
+          name: cat.name,
+          image: cat.subcategories?.[0]?.image 
+            ? (cat.subcategories[0].image.startsWith('/') ? cat.subcategories[0].image : `/${cat.subcategories[0].image}`)
+            : undefined,
+          features: cat.features || [],
+          subcategories: cat.subcategories || []
+        }));
+        
+        setInteriorCategories(categories.slice(0, 6)); // Show only first 6
+      } catch (err) {
+        console.error("Failed to fetch interior categories:", err);
+        setInteriorCategories([]);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+    
+    fetchInteriorCategories();
+  }, []);
 
   const features = [
     {
@@ -62,54 +96,26 @@ const Home: React.FC = () => {
     }
   ];
 
-  // Interior Works Services
-  const interiorWorks = [
-    {
-      icon: HomeIcon,
-      title: "3D Wallpapers",
-      description: "Transform your walls with stunning 3D wallpapers that add depth and character to any room",
-      category: "3dbokka",
-      gradient: "from-purple-500 to-pink-500"
-    },
-    {
-      icon: Wand2,
-      title: "Wall Art Effect",
-      description: "Create dramatic visual impact with our premium wall art effects and treatments",
-      category: "wallart",
-      gradient: "from-blue-500 to-cyan-500"
-    },
-    {
-      icon: Sparkles,
-      title: "Water Fountains",
-      description: "Add tranquility and elegance with custom water fountains and bubble features",
-      category: "fountain",
-      gradient: "from-green-500 to-teal-500"
-    },
-    {
-      icon: Brush,
-      title: "Vertical Gardens",
-      description: "Bring nature indoors with beautiful artificial and natural vertical garden solutions",
-      category: "maddalo_garden",
-      gradient: "from-orange-500 to-red-500"
-    },
-    {
-      icon: Palette,
-      title: "Flooring Solutions",
-      description: "Premium vinyl, wooden, and gym flooring options to suit every style and need",
-      category: "vinyl_flooring",
-      gradient: "from-indigo-500 to-purple-500"
-    },
-    {
-      icon: HomeIcon,
-      title: "Blinds & Canopies",
-      description: "Stylish blinds, canopies, and automation solutions for modern living spaces",
-      category: "blinds",
-      gradient: "from-amber-500 to-yellow-500"
-    }
-  ];
 
   return (
     <main className="w-full max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* SEO Headings for Regional Keywords */}
+      <div className="sr-only">
+        <h2>Best Interior Designers in Vijayawada, Andhra Pradesh</h2>
+        <h2>Best Interior Designers in Guntur, Andhra Pradesh</h2>
+        <h2>Best Interior Designers in Eluru, Andhra Pradesh</h2>
+        <h2>Best Interior Designers in Hyderabad, Telangana</h2>
+        <h2>Interior Design Services Vijayawada</h2>
+        <h2>Interior Design Services Guntur</h2>
+        <h2>Interior Design Services Eluru</h2>
+        <h2>Interior Design Services Hyderabad</h2>
+        <h2>Professional Interior Designers Andhra Pradesh</h2>
+        <h2>Professional Interior Designers Telangana</h2>
+        <h2>Top Interior Designers in Vijayawada</h2>
+        <h2>Top Interior Designers in Hyderabad</h2>
+        <h2>Ghar Sansar - #1 Interior Designers Vijayawada</h2>
+      </div>
+      
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-blue-50 via-indigo-50 to-white py-12 sm:py-16 lg:py-20 overflow-hidden">
         {/* Decorative elements */}
@@ -125,12 +131,11 @@ const Home: React.FC = () => {
               transition={{ duration: 0.6 }}
             >
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-extrabold text-gray-900 mb-4 sm:mb-6 leading-tight">
-                Transform Your
-                <span className="block bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Home Today</span>
+                Best Interior Designers in
+                <span className="block bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Andhra Pradesh & Telangana</span>
               </h1>
               <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-6 sm:mb-8 leading-relaxed">
-                Discover premium home decor items and professional interior
-                design services to create the perfect living space.
+                Transform your home with premium decor items and professional interior design services in Vijayawada, Guntur, Eluru, Hyderabad, and across Andhra Pradesh & Telangana.
               </p>
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <Link
@@ -255,6 +260,117 @@ const Home: React.FC = () => {
         </div>
       </section>
 
+      {/* Interior Works Section */}
+      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-gray-50 via-blue-50 to-white relative overflow-hidden">
+        {/* Decorative background elements */}
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-400/5 rounded-full blur-3xl hidden sm:block"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-indigo-400/5 rounded-full blur-3xl hidden sm:block"></div>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="text-center mb-8 sm:mb-12 lg:mb-16">
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              className="inline-block"
+            >
+              <span className="text-blue-600 font-semibold text-xs sm:text-sm uppercase tracking-wide mb-2 block">
+                Interior Design Services
+              </span>
+            </motion.div>
+            <motion.h2 
+              initial={{ opacity: 0, y: -20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-3 sm:mb-4"
+            >
+              Our Interior Works
+            </motion.h2>
+            <motion.p 
+              initial={{ opacity: 0, y: -20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4"
+            >
+              Transform your space with our professional interior design solutions
+            </motion.p>
+          </div>
+
+          {loadingCategories ? (
+            <div className="text-center py-12">
+              <p className="text-gray-500">Loading interior categories...</p>
+            </div>
+          ) : interiorCategories.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
+              {interiorCategories.map((category, index) => (
+                <motion.div
+                  key={category.name}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  whileHover={{ y: -8 }}
+                  className="group"
+                >
+                  <Link to="/interior-design" className="block h-full">
+                    <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 h-full border border-gray-100">
+                      {/* Image/Thumbnail */}
+                      <div className="relative h-36 sm:h-40 md:h-48 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+                        {category.image ? (
+                          <img
+                            src={category.image}
+                            alt={category.name}
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <HomeIcon className="w-16 h-16 text-gray-400" />
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300"></div>
+                      </div>
+                      
+                      {/* Content */}
+                      <div className="p-4 sm:p-6">
+                        <h3 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 mb-2 sm:mb-3 group-hover:text-blue-600 transition-colors duration-200">
+                          {category.name}
+                        </h3>
+                        <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mb-1">
+                          {category.subcategories.length} {category.subcategories.length === 1 ? 'Design' : 'Designs'}
+                        </p>
+                        <div className="flex items-center text-blue-600 font-semibold text-xs sm:text-sm group-hover:translate-x-1 transition-transform duration-200 mt-3">
+                          View Gallery
+                          <ArrowRight className="ml-2 w-3 h-3 sm:w-4 sm:h-4" />
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-500">No interior categories available.</p>
+            </div>
+          )}
+
+          {/* CTA Button */}
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            className="text-center mt-8 sm:mt-12 lg:mt-16"
+          >
+            <Link
+              to="/interior-design"
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 sm:px-10 sm:py-4 rounded-lg hover:from-blue-700 hover:to-indigo-700 shadow-xl hover:shadow-2xl transition-all duration-300 font-bold text-sm sm:text-base md:text-lg inline-flex items-center group"
+            >
+              Explore All Interior Works
+              <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Recent Products Section */}
       <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-white to-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -336,105 +452,6 @@ const Home: React.FC = () => {
               </Link>
             </div>
           )}
-        </div>
-      </section>
-
-      {/* Interior Works Section */}
-      <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-gray-50 via-blue-50 to-white relative overflow-hidden">
-        {/* Decorative background elements */}
-        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-400/5 rounded-full blur-3xl hidden sm:block"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-indigo-400/5 rounded-full blur-3xl hidden sm:block"></div>
-        
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-          <div className="text-center mb-8 sm:mb-12 lg:mb-16">
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="inline-block"
-            >
-              <span className="text-blue-600 font-semibold text-xs sm:text-sm uppercase tracking-wide mb-2 block">
-                Interior Design Services
-              </span>
-            </motion.div>
-            <motion.h2 
-              initial={{ opacity: 0, y: -20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-3 sm:mb-4"
-            >
-              Our Interior Works
-            </motion.h2>
-            <motion.p 
-              initial={{ opacity: 0, y: -20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-base sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-4"
-            >
-              Transform your space with our professional interior design solutions
-            </motion.p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-            {interiorWorks.map((work, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ y: -8 }}
-                className="group"
-              >
-                <Link to="/interior-design" className="block h-full">
-                  <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 h-full border border-gray-100">
-                    {/* Icon with gradient background */}
-                    <div className={`relative h-36 sm:h-40 md:h-48 bg-gradient-to-br ${work.gradient} flex items-center justify-center overflow-hidden`}>
-                      <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-all duration-300"></div>
-                      <div className="relative transform group-hover:scale-110 transition-transform duration-300">
-                        <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
-                          <work.icon className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-white" />
-                        </div>
-                      </div>
-                      
-                      {/* Decorative circle */}
-                      <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
-                      <div className="absolute -top-10 -left-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
-                    </div>
-                    
-                    {/* Content */}
-                    <div className="p-4 sm:p-6">
-                      <h3 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 mb-2 sm:mb-3 group-hover:text-blue-600 transition-colors duration-200">
-                        {work.title}
-                      </h3>
-                      <p className="text-gray-600 text-xs sm:text-sm leading-relaxed mb-3 sm:mb-4">
-                        {work.description}
-                      </p>
-                      <div className="flex items-center text-blue-600 font-semibold text-xs sm:text-sm group-hover:translate-x-1 transition-transform duration-200">
-                        View Gallery
-                        <ArrowRight className="ml-2 w-3 h-3 sm:w-4 sm:h-4" />
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* CTA Button */}
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.6 }}
-            className="text-center mt-8 sm:mt-12 lg:mt-16"
-          >
-            <Link
-              to="/interior-design"
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 sm:px-10 sm:py-4 rounded-lg hover:from-blue-700 hover:to-indigo-700 shadow-xl hover:shadow-2xl transition-all duration-300 font-bold text-sm sm:text-base md:text-lg inline-flex items-center group"
-            >
-              Explore All Interior Works
-              <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-          </motion.div>
         </div>
       </section>
 

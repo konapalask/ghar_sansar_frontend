@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { Plus, Edit3, Trash2, Save, X } from "lucide-react";
+import React, { useEffect, useState, useMemo } from "react";
+import { Plus, Edit3, Trash2, Save, X, Search, Hammer } from "lucide-react";
 import axios from "axios";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface InteriorWork {
   id: string;
@@ -24,15 +25,17 @@ const InteriorWorksAdmin: React.FC = () => {
   const [categoriesData, setCategoriesData] = useState<Category[]>([]);
   const [form, setForm] = useState<InteriorWork | null>(null);
   const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("All");
 
   const fetchWorks = async () => {
     try {
       const res = await axios.get(`${API_UPLOAD}/interior`);
       const data = await res.data;
-      
+
       // Handle new API structure with data.data array
       const categories = data.data || data.categories || [];
-      
+
       setCategoriesData(
         Array.isArray(categories)
           ? categories.map((cat: any) => ({
@@ -44,17 +47,16 @@ const InteriorWorksAdmin: React.FC = () => {
           : []
       );
 
-      const flatWorks: InteriorWork[] = categories
-        .flatMap((cat: any) =>
-          cat.subcategories.map((sub: any, idx: number) => ({
-            id: sub.id || `${cat.name}-${sub.name}-${idx}`,
-            title: sub.name,
-            category: cat.name,
-            subCategory: sub.name,
-            description: sub.description || cat.name,
-            image: sub.image,
-          }))
-        );
+      const flatWorks: InteriorWork[] = categories.flatMap((cat: any) =>
+        cat.subcategories.map((sub: any, idx: number) => ({
+          id: sub.id || `${cat.name}-${sub.name}-${idx}`,
+          title: sub.name,
+          category: cat.name,
+          subCategory: sub.name,
+          description: sub.description || cat.name,
+          image: sub.image,
+        }))
+      );
       setWorks(flatWorks);
     } catch (err) {
       console.error("Failed to fetch works:", err);
@@ -80,11 +82,12 @@ const InteriorWorksAdmin: React.FC = () => {
 
   const handleEdit = (work: InteriorWork) => {
     setForm({ ...work, file: undefined });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleDelete = async (id: string) => {
     const work = works.find((w) => w.id === id);
-    if (!work || !window.confirm("Delete this work?")) return;
+    if (!work || !window.confirm("Are you sure you want to delete this interior work?")) return;
 
     try {
       await axios.delete(`${API_UPLOAD}/interior`, {
@@ -95,9 +98,11 @@ const InteriorWorksAdmin: React.FC = () => {
           id: work.id,
         },
       });
+      alert("🗑️ Interior work deleted successfully!");
       fetchWorks();
     } catch (err) {
       console.error("Failed to delete:", err);
+      alert("❌ Failed to delete interior work");
     }
   };
 
@@ -127,150 +132,283 @@ const InteriorWorksAdmin: React.FC = () => {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
+      alert("✅ Interior work saved successfully!");
       setForm(null);
       fetchWorks();
     } catch (err) {
       console.error("Failed to save:", err);
+      alert("❌ Failed to save interior work");
     } finally {
       setLoading(false);
     }
   };
 
+  // Filter works
+  const filteredWorks = useMemo(() => {
+    return works.filter((work) => {
+      const matchesSearch = searchTerm
+        ? work.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          work.description.toLowerCase().includes(searchTerm.toLowerCase())
+        : true;
+      const matchesCategory = categoryFilter === "All" || work.category === categoryFilter;
+      return matchesSearch && matchesCategory;
+    });
+  }, [works, searchTerm, categoryFilter]);
+
+  const uniqueCategories = useMemo(
+    () => ["All", ...Array.from(new Set(works.map((w) => w.category)))],
+    [works]
+  );
+
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Interior Works (Admin)</h1>
-        {/* <button
+    <div className="space-y-6">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+      >
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Interior Works Management</h1>
+          <p className="text-gray-600 mt-1">{works.length} total works</p>
+        </div>
+        <button
           onClick={handleAdd}
-          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700"
+          className="bg-gradient-to-r from-yellow-600 to-yellow-700 text-white px-6 py-3 rounded-lg hover:from-yellow-700 hover:to-yellow-800 shadow-lg hover:shadow-xl transition-all duration-300 font-semibold inline-flex items-center gap-2"
         >
-          <Plus size={18} /> Add Interior Work
-        </button> */}
-      </div>
+          <Plus className="w-5 h-5" /> Add New Work
+        </button>
+      </motion.div>
 
-      {/* FORM */}
-      {form && (
-        <div className="border p-4 rounded-lg mb-6 bg-gray-50 shadow">
-          <h2 className="text-lg font-semibold mb-3">
-            {form.id ? "Edit Work" : "Add New Work"}
-          </h2>
-
-          <div className="grid gap-3">
+      {/* Filters */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="bg-white rounded-2xl shadow-lg p-4"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Title"
-              value={form.title}
-              onChange={(e) => setForm({ ...form, title: e.target.value })}
-              className="border px-3 py-2 rounded-lg"
+              placeholder="Search interior works..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent outline-none transition"
             />
-
-            {/* Editable input with datalist for Category */}
-            <input
-              list="category-list"
-              placeholder="Category (select or type new)"
-              value={form.category}
-              onChange={(e) => setForm({ ...form, category: e.target.value })}
-              className="border px-3 py-2 rounded-lg"
-            />
-            <datalist id="category-list">
-              {categoriesData.map((cat) => (
-                <option key={cat.name} value={cat.name} />
+          </div>
+          <div className="relative">
+            <Hammer className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent outline-none transition appearance-none bg-white"
+            >
+              {uniqueCategories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
               ))}
-            </datalist>
-
-            {/* Editable input with datalist for Subcategory */}
-            <input
-              list="subcategory-list"
-              placeholder="Subcategory (select or type new)"
-              value={form.subCategory}
-              onChange={(e) => setForm({ ...form, subCategory: e.target.value })}
-              className="border px-3 py-2 rounded-lg"
-            />
-            <datalist id="subcategory-list">
-              {categoriesData
-                .find((c) => c.name === form.category)
-                ?.subcategories.map((sub) => (
-                  <option key={sub.name} value={sub.name} />
-                ))}
-            </datalist>
-
-            <textarea
-              placeholder="Description"
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-              className="border px-3 py-2 rounded-lg"
-            />
-
-            <input type="file" accept="image/*" onChange={handleImageUpload} />
-
-            {form.file ? (
-              <img
-                src={URL.createObjectURL(form.file)}
-                alt="Preview"
-                className="w-40 h-28 object-cover rounded-lg mt-2"
-              />
-            ) : form.image ? (
-              <img
-                src={form.image}
-                alt="Current"
-                className="w-40 h-28 object-cover rounded-lg mt-2"
-              />
-            ) : null}
-
-            <div className="flex gap-3 mt-3">
-              <button
-                onClick={handleSave}
-                disabled={loading}
-                className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
-              >
-                <Save size={16} /> {loading ? "Saving..." : "Save"}
-              </button>
-              <button
-                onClick={() => setForm(null)}
-                className="flex items-center gap-2 bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
-              >
-                <X size={16} /> Cancel
-              </button>
-            </div>
+            </select>
           </div>
         </div>
-      )}
+      </motion.div>
 
-      {/* LIST */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {works.map((work) => (
-          <div
-            key={work.id}
-            className="border rounded-xl p-4 shadow hover:shadow-lg transition"
+      {/* Form */}
+      <AnimatePresence>
+        {form && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="bg-white rounded-2xl shadow-xl p-6 overflow-hidden"
           >
-            {work.image && (
-              <img
-                src={work.image}
-                alt={work.title}
-                className="w-full h-40 object-cover rounded-lg mb-3"
-              />
-            )}
-            <h2 className="text-lg font-semibold">{work.title}</h2>
-            <p className="text-sm text-gray-500">
-              {work.category} → {work.subCategory}
-            </p>
-            <p className="mt-2 text-gray-700">{work.description}</p>
-            <div className="flex gap-3 mt-4">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold text-gray-800">
+                {form.id ? "Edit Work" : "Add New Work"}
+              </h2>
               <button
-                onClick={() => handleEdit(work)}
-                className="flex items-center gap-1 px-3 py-1 border rounded-lg text-blue-600 hover:bg-blue-50"
+                onClick={() => setForm(null)}
+                className="text-gray-500 hover:text-gray-700 transition-colors"
               >
-                <Edit3 size={16} /> Edit
-              </button>
-              <button
-                onClick={() => handleDelete(work.id)}
-                className="flex items-center gap-1 px-3 py-1 border rounded-lg text-red-600 hover:bg-red-50"
-              >
-                <Trash2 size={16} /> Delete
+                <X className="w-6 h-6" />
               </button>
             </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Title *</label>
+                <input
+                  type="text"
+                  placeholder="Enter work title"
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent outline-none transition"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Category *</label>
+                  <input
+                    list="category-list"
+                    placeholder="Select or type new category"
+                    value={form.category}
+                    onChange={(e) => setForm({ ...form, category: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent outline-none transition"
+                    required
+                  />
+                  <datalist id="category-list">
+                    {categoriesData.map((cat) => (
+                      <option key={cat.name} value={cat.name} />
+                    ))}
+                  </datalist>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Subcategory *</label>
+                  <input
+                    list="subcategory-list"
+                    placeholder="Select or type new subcategory"
+                    value={form.subCategory}
+                    onChange={(e) => setForm({ ...form, subCategory: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent outline-none transition"
+                    required
+                  />
+                  <datalist id="subcategory-list">
+                    {categoriesData
+                      .find((c) => c.name === form.category)
+                      ?.subcategories.map((sub) => (
+                        <option key={sub.name} value={sub.name} />
+                      ))}
+                  </datalist>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+                <textarea
+                  placeholder="Enter description"
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent outline-none transition h-32 resize-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Work Image</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="block w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent outline-none transition cursor-pointer"
+                />
+              </div>
+
+              {form.file ? (
+                <motion.img
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  src={URL.createObjectURL(form.file)}
+                  alt="Preview"
+                  className="w-full h-64 object-contain rounded-lg border border-gray-200 bg-gray-50"
+                />
+              ) : (
+                form.image && (
+                  <img
+                    src={form.image}
+                    alt="Current"
+                    className="w-full h-64 object-contain rounded-lg border border-gray-200 bg-gray-50"
+                  />
+                )
+              )}
+
+              <div className="flex gap-4 pt-4">
+                <button
+                  onClick={handleSave}
+                  disabled={loading}
+                  className="bg-gradient-to-r from-yellow-600 to-yellow-700 text-white px-8 py-3 rounded-lg hover:from-yellow-700 hover:to-yellow-800 shadow-lg hover:shadow-xl transition-all duration-300 font-semibold inline-flex items-center gap-2 disabled:opacity-50"
+                >
+                  <Save className="w-5 h-5" /> {loading ? "Saving..." : "Save Work"}
+                </button>
+                <button
+                  onClick={() => setForm(null)}
+                  className="border-2 border-gray-300 text-gray-700 px-8 py-3 rounded-lg hover:bg-gray-50 transition-all duration-300 font-semibold"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* List */}
+      <div>
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">
+          Interior Works ({filteredWorks.length})
+        </h2>
+        {filteredWorks.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredWorks.map((work, index) => (
+              <motion.div
+                key={work.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                whileHover={{ scale: 1.02, y: -5 }}
+                className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group"
+              >
+                {work.image && (
+                  <div className="relative overflow-hidden bg-gray-100">
+                    <img
+                      src={work.image}
+                      alt={work.title}
+                      className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
+                    />
+                  </div>
+                )}
+                <div className="p-4">
+                  <h2 className="text-lg font-bold mb-2 line-clamp-1">{work.title}</h2>
+                  <p className="text-sm text-gray-500 mb-2">
+                    {work.category} → {work.subCategory}
+                  </p>
+                  <p className="text-gray-700 text-sm line-clamp-2 mb-4">{work.description}</p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleEdit(work)}
+                      className="flex-1 bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition-colors font-semibold inline-flex items-center justify-center gap-2"
+                    >
+                      <Edit3 className="w-4 h-4" /> Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(work.id)}
+                      className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors font-semibold inline-flex items-center justify-center gap-2"
+                    >
+                      <Trash2 className="w-4 h-4" /> Delete
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
           </div>
-        ))}
+        ) : (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="bg-white rounded-2xl shadow-lg p-12 text-center"
+          >
+            <Hammer className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">No interior works found</h3>
+            <p className="text-gray-600">
+              {searchTerm || categoryFilter !== "All"
+                ? "Try adjusting your filters"
+                : "Start by adding your first interior work"}
+            </p>
+          </motion.div>
+        )}
       </div>
     </div>
   );

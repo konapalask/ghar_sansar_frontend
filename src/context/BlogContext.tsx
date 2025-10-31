@@ -59,25 +59,44 @@ export const BlogProvider: React.FC<BlogProviderProps> = ({ children }) => {
 
       const res = await axios.get(API_FETCH, { headers: { Accept: "application/json" } });
       
-      // Handle new API structure with data.data array
-      const categories = res.data.data || res.data.categories || [];
-
-      const allBlogs: Blog[] = categories?.flatMap((cat: any) =>
-        cat.subcategories?.flatMap((sub: any) =>
-          sub.images?.map((img: any) => ({
-            id: img.id || img.name, // Use real backend UUID 'id' or fallback to 'name'
-            title: img.title,
-            description: img.description,
-            image: img.image,
-            video: img.video || undefined,
-            videoType: detectVideoType(img.video),
-            price: img.price,
-            features: img.features || [],
-          })) || []
-        ) || []
-      ) || [];
+      const data = res.data.data || [];
+      
+      // Check if data is flat array or nested structure
+      let allBlogs: Blog[] = [];
+      
+      // If first item has subcategories, it's nested structure
+      if (data.length > 0 && data[0].subcategories) {
+        // Handle nested structure: categories -> subcategories -> images
+        allBlogs = data.flatMap((cat: any) =>
+          cat.subcategories?.flatMap((sub: any) =>
+            sub.images?.map((img: any) => ({
+              id: img.id || img.name,
+              title: img.title,
+              description: img.description,
+              image: img.image,
+              video: img.video || undefined,
+              videoType: detectVideoType(img.video),
+              price: img.price,
+              features: img.features || [],
+            })) || []
+          ) || []
+        ) || [];
+      } else {
+        // Handle flat structure: direct array of blog items
+        allBlogs = data.map((item: any) => ({
+          id: item.id || item.name,
+          title: item.title,
+          description: item.description,
+          image: item.image,
+          video: item.video || undefined,
+          videoType: detectVideoType(item.video),
+          price: item.price,
+          features: item.features || [],
+        }));
+      }
 
       setBlogs(allBlogs);
+      console.log("Blogs fetched:", allBlogs.length);
     } catch (err) {
       console.error(err);
       setError("Failed to fetch blogs");

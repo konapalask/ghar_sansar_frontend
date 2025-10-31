@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { Save, Edit3, Trash2, ImagePlus } from "lucide-react";
+import React, { useState, useEffect, useMemo } from "react";
+import { Save, Edit3, Trash2, ImagePlus, Search, X, Filter, Plus, TrendingUp, Package } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Product type
 interface Product {
@@ -40,6 +41,9 @@ const ProductsAdmin: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("All");
 
   const [form, setForm] = useState({
     title: "",
@@ -154,8 +158,8 @@ const ProductsAdmin: React.FC = () => {
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: params.toString(),
         });
-      } 
-      
+      }
+
       // 🟣 CREATE PRODUCT
       else {
         const formData = new FormData();
@@ -198,6 +202,7 @@ const ProductsAdmin: React.FC = () => {
       setPreview(null);
       setExistingImageUrl(null);
       setEditingId(null);
+      setShowForm(false);
     } catch (err) {
       console.error("❌ Error uploading product:", err);
       alert("Upload failed. Check console for details.");
@@ -225,6 +230,7 @@ const ProductsAdmin: React.FC = () => {
     setPreview(null);
     setExistingImageUrl(fixImageUrl(p.image));
     setEditingId(id);
+    setShowForm(true);
 
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -251,140 +257,332 @@ const ProductsAdmin: React.FC = () => {
     }
   };
 
+  // Reset form
+  const resetForm = () => {
+    setForm({
+      title: "",
+      description: "",
+      price: "",
+      actual_price: "",
+      image: "",
+      category: categoriesData[0]?.name || "Idols",
+      subCategory: categoriesData[0]?.subcategories[0]?.name || "Premium Line",
+      features: [],
+    });
+    setPreview(null);
+    setExistingImageUrl(null);
+    setEditingId(null);
+    setShowForm(false);
+  };
+
+  // Filter products
+  const filteredProducts = useMemo(() => {
+    return products.filter((p) => {
+      const matchesSearch = searchTerm
+        ? p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          p.description.toLowerCase().includes(searchTerm.toLowerCase())
+        : true;
+      const matchesCategory = categoryFilter === "All" || p.category === categoryFilter;
+      return matchesSearch && matchesCategory;
+    });
+  }, [products, searchTerm, categoryFilter]);
+
+  const uniqueCategories = useMemo(
+    () => ["All", ...Array.from(new Set(products.map((p) => p.category)))],
+    [products]
+  );
+
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Admin: Manage Products</h1>
+    <div className="space-y-6">
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+      >
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Manage Products</h1>
+          <p className="text-gray-600 mt-1">{products.length} total products</p>
+        </div>
+        <button
+          onClick={() => {
+            resetForm();
+            setShowForm(true);
+          }}
+          className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 font-semibold inline-flex items-center gap-2"
+        >
+          <Plus className="w-5 h-5" /> Add New Product
+        </button>
+      </motion.div>
 
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-3 border p-4 rounded-md">
-        <input
-          type="text"
-          placeholder="Title"
-          value={form.title}
-          onChange={(e) => setForm({ ...form, title: e.target.value })}
-          className="border p-2 w-full"
-        />
-        <textarea
-          placeholder="Description"
-          value={form.description}
-          onChange={(e) => setForm({ ...form, description: e.target.value })}
-          className="border p-2 w-full"
-        />
-        <input
-          type="text"
-          placeholder="Price"
-          value={form.price}
-          onChange={(e) => setForm({ ...form, price: e.target.value })}
-          className="border p-2 w-full"
-        />
-        <input
-          type="text"
-          placeholder="Actual Price"
-          value={form.actual_price}
-          onChange={(e) => setForm({ ...form, actual_price: e.target.value })}
-          className="border p-2 w-full"
-        />
-
-        <div className="flex space-x-2">
-          <div className="flex-1">
-            <label className="block font-medium mb-1">Category</label>
+      {/* Filters */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="bg-white rounded-2xl shadow-lg p-4"
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+            />
+          </div>
+          <div className="relative">
+            <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <select
-              value={form.category}
-              onChange={(e) =>
-                setForm({
-                  ...form,
-                  category: e.target.value,
-                  subCategory:
-                    categoriesData.find((c) => c.name === e.target.value)
-                      ?.subcategories[0]?.name || "",
-                })
-              }
-              className="border p-2 w-full"
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition appearance-none bg-white"
             >
-              {categoriesData.map((cat) => (
-                <option key={cat.cat_id} value={cat.name}>
-                  {cat.name}
+              {uniqueCategories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
                 </option>
               ))}
             </select>
           </div>
-
-          <div className="flex-1">
-            <label className="block font-medium mb-1">Subcategory</label>
-            <select
-              value={form.subCategory}
-              onChange={(e) => setForm({ ...form, subCategory: e.target.value })}
-              className="border p-2 w-full"
-            >
-              {categoriesData
-                .find((c) => c.name === form.category)
-                ?.subcategories.map((sub) => (
-                  <option key={sub.sub_id} value={sub.name}>
-                    {sub.name}
-                  </option>
-                ))}
-            </select>
-          </div>
         </div>
+      </motion.div>
 
-        <div>
-          <label className="block font-medium mb-1">Product Image</label>
-          <input type="file" accept="image/*" onChange={handleImageChange} />
-          {preview ? (
-            <img src={preview} alt="Preview" className="w-full h-auto mt-2 rounded" />
-          ) : existingImageUrl ? (
-            <img src={existingImageUrl} alt="Existing" className="w-full h-auto mt-2 rounded" />
-          ) : null}
-        </div>
+      {/* Add/Edit Form */}
+      <AnimatePresence>
+        {showForm && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="bg-white rounded-2xl shadow-xl p-6 overflow-hidden"
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-800">
+                {editingId ? "Edit Product" : "Add New Product"}
+              </h2>
+              <button
+                onClick={resetForm}
+                className="text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
 
-        <button
-          type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded flex items-center"
-        >
-          {editingId ? (
-            <>
-              <Save className="w-4 h-4 mr-2" /> Update Product
-            </>
-          ) : (
-            <>
-              <ImagePlus className="w-4 h-4 mr-2" /> Add Product
-            </>
-          )}
-        </button>
-      </form>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Product Title *
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Enter product title"
+                    value={form.title}
+                    onChange={(e) => setForm({ ...form, title: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                    required
+                  />
+                </div>
 
-      {/* Product Grid */}
-      <h2 className="text-xl font-semibold">Existing Products</h2>
-      {loading ? (
-        <p>Loading products...</p>
-      ) : products.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {products.map((p) => (
-            <div key={p.id} className="border rounded p-3 shadow-sm">
-              <img src={fixImageUrl(p.image)} alt={p.title} className="rounded mb-2 w-full" />
-              <h3 className="font-bold">{p.title}</h3>
-              <p className="text-sm text-gray-600">{p.description}</p>
-              <p className="text-lg font-semibold">₹{p.price}</p>
-              <div className="flex space-x-2 mt-2">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Price (₹) *
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Enter price"
+                    value={form.price}
+                    onChange={(e) => setForm({ ...form, price: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Description
+                </label>
+                <textarea
+                  placeholder="Enter product description"
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition h-32 resize-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Category</label>
+                  <select
+                    value={form.category}
+                    onChange={(e) =>
+                      setForm({
+                        ...form,
+                        category: e.target.value,
+                        subCategory:
+                          categoriesData.find((c) => c.name === e.target.value)?.subcategories[0]
+                            ?.name || "",
+                      })
+                    }
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition appearance-none bg-white"
+                  >
+                    {categoriesData.map((cat) => (
+                      <option key={cat.cat_id} value={cat.name}>
+                        {cat.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Subcategory
+                  </label>
+                  <select
+                    value={form.subCategory}
+                    onChange={(e) => setForm({ ...form, subCategory: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition appearance-none bg-white"
+                  >
+                    {categoriesData
+                      .find((c) => c.name === form.category)
+                      ?.subcategories.map((sub) => (
+                        <option key={sub.sub_id} value={sub.name}>
+                          {sub.name}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Product Image *
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition cursor-pointer"
+                />
+                {(preview || existingImageUrl) && (
+                  <motion.img
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    src={preview || existingImageUrl || ""}
+                    alt="Preview"
+                    className="w-full h-64 object-contain rounded-lg mt-4 border border-gray-200 bg-gray-50"
+                  />
+                )}
+              </div>
+
+              <div className="flex gap-4 pt-4">
                 <button
-                  onClick={() => handleEdit(p.id)}
-                  className="bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 rounded flex items-center"
+                  type="submit"
+                  className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-8 py-3 rounded-lg hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 font-semibold inline-flex items-center gap-2"
                 >
-                  <Edit3 className="w-4 h-4 mr-1" /> Edit
+                  {editingId ? (
+                    <>
+                      <Save className="w-5 h-5" /> Update Product
+                    </>
+                  ) : (
+                    <>
+                      <ImagePlus className="w-5 h-5" /> Add Product
+                    </>
+                  )}
                 </button>
                 <button
-                  onClick={() => handleDelete(p.id)}
-                  className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded flex items-center"
+                  type="button"
+                  onClick={resetForm}
+                  className="border-2 border-gray-300 text-gray-700 px-8 py-3 rounded-lg hover:bg-gray-50 transition-all duration-300 font-semibold"
                 >
-                  <Trash2 className="w-4 h-4 mr-1" /> Delete
+                  Cancel
                 </button>
               </div>
-            </div>
-          ))}
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Product Grid */}
+      <div>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
+            Products ({filteredProducts.length})
+          </h2>
         </div>
-      ) : (
-        <p className="text-gray-500">No products found.</p>
-      )}
+
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="spinner"></div>
+          </div>
+        ) : filteredProducts.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProducts.map((p, index) => (
+              <motion.div
+                key={p.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+                whileHover={{ scale: 1.02, y: -5 }}
+                className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 group"
+              >
+                <div className="relative overflow-hidden bg-gray-100 aspect-square flex items-center justify-center">
+                  <img
+                    src={fixImageUrl(p.image)}
+                    alt={p.title}
+                    className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
+                  />
+                  <div className="absolute top-2 right-2 bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                    {p.category}
+                  </div>
+                </div>
+                <div className="p-4">
+                  <h3 className="font-bold text-lg text-gray-800 mb-1 line-clamp-2">{p.title}</h3>
+                  <p className="text-sm text-gray-600 line-clamp-2 mb-3">{p.description}</p>
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="text-2xl font-bold text-blue-600">₹{p.price}</span>
+                    {p.actual_price && (
+                      <span className="text-gray-400 line-through">₹{p.actual_price}</span>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleEdit(p.id)}
+                      className="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg transition-colors font-semibold inline-flex items-center justify-center gap-2"
+                    >
+                      <Edit3 className="w-4 h-4" /> Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(p.id)}
+                      className="flex-1 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors font-semibold inline-flex items-center justify-center gap-2"
+                    >
+                      <Trash2 className="w-4 h-4" /> Delete
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="bg-white rounded-2xl shadow-lg p-12 text-center"
+          >
+            <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">No products found</h3>
+            <p className="text-gray-600">
+              {searchTerm || categoryFilter !== "All"
+                ? "Try adjusting your filters"
+                : "Start by adding your first product"}
+            </p>
+          </motion.div>
+        )}
+      </div>
     </div>
   );
 };
