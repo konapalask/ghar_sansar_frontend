@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import axios from "axios";
+import mockBlogs from "../data/blog.json";
 
 export type Blog = {
   id: string;
@@ -30,7 +31,7 @@ export const useBlogs = () => {
   return context;
 };
 
-const API_FETCH = import.meta.env.VITE_AWS_API_URL 
+const API_FETCH = import.meta.env.VITE_AWS_API_URL
   ? `${import.meta.env.VITE_AWS_API_URL}/storage/upload/blog`
   : "https://lx70r6zsef.execute-api.ap-south-1.amazonaws.com/prod/api/storage/upload/blog";
 
@@ -57,42 +58,43 @@ export const BlogProvider: React.FC<BlogProviderProps> = ({ children }) => {
       setLoading(true);
       setError(null);
 
-      const res = await axios.get(API_FETCH, { headers: { Accept: "application/json" } });
-      
-      const data = res.data.data || [];
-      
+      console.log("Loading blogs from local JSON mock data");
+      const data = (mockBlogs as any).default || mockBlogs || [];
+
       // Check if data is flat array or nested structure
       let allBlogs: Blog[] = [];
-      
-      // If first item has subcategories, it's nested structure
-      if (data.length > 0 && data[0].subcategories) {
-        // Handle nested structure: categories -> subcategories -> images
-        allBlogs = data.flatMap((cat: any) =>
-          cat.subcategories?.flatMap((sub: any) =>
-            sub.images?.map((img: any) => ({
-              id: img.id || img.name,
-              title: img.title,
-              description: img.description,
-              image: img.image,
-              video: img.video || undefined,
-              videoType: detectVideoType(img.video),
-              price: img.price,
-              features: img.features || [],
-            })) || []
-          ) || []
-        ) || [];
-      } else {
-        // Handle flat structure: direct array of blog items
-        allBlogs = data.map((item: any) => ({
-          id: item.id || item.name,
-          title: item.title,
-          description: item.description,
-          image: item.image,
-          video: item.video || undefined,
-          videoType: detectVideoType(item.video),
-          price: item.price,
-          features: item.features || [],
-        }));
+
+      if (Array.isArray(data)) {
+        if (data.length > 0 && data[0].subcategories) {
+          // Handle nested structure: categories -> subcategories -> images/blogs
+          allBlogs = data.flatMap((cat: any) =>
+            cat.subcategories?.flatMap((sub: any) => {
+              const items = sub.images || sub.blogs || sub.posts || [];
+              return items.map((img: any) => ({
+                id: img.id || img.name,
+                title: img.title || img.name,
+                description: img.description,
+                image: img.image,
+                video: img.video || undefined,
+                videoType: detectVideoType(img.video),
+                price: img.price,
+                features: img.features || [],
+              }));
+            }) || []
+          ) || [];
+        } else {
+          // Handle flat structure: direct array of blog items
+          allBlogs = data.map((item: any) => ({
+            id: item.id || item.name,
+            title: item.title || item.name,
+            description: item.description,
+            image: item.image,
+            video: item.video || undefined,
+            videoType: detectVideoType(item.video),
+            price: item.price,
+            features: item.features || [],
+          }));
+        }
       }
 
       setBlogs(allBlogs);
@@ -147,7 +149,7 @@ export const BlogProvider: React.FC<BlogProviderProps> = ({ children }) => {
           id,
         },
       });
-      setBlogs((prev) => prev.filter((b) => b.id !== id));
+      setBlogs((prev: Blog[]) => prev.filter((b: Blog) => b.id !== id));
     } catch (err) {
       console.error("Delete blog failed", err);
       throw err;

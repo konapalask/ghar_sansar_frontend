@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useBlogs } from "../context/BlogContext";
 
 const API_URL = "https://lx70r6zsef.execute-api.ap-south-1.amazonaws.com/prod/api/storage/upload/blog";
 const YOUTUBE_LINK = "https://www.youtube.com/@gharsansar_shop";
@@ -31,31 +32,11 @@ const extractYouTubeId = (url: string) => {
 };
 
 const Blog: React.FC = () => {
-  const [blogs, setBlogs] = useState<BlogItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { blogs, loading } = useBlogs();
   const [modalOpen, setModalOpen] = useState(false);
-  const [modalBlog, setModalBlog] = useState<BlogItem | null>(null);
+  const [modalBlog, setModalBlog] = useState<any | null>(null);
 
-  useEffect(() => {
-    fetch(API_URL)
-      .then((res) => res.json())
-      .then((data) => {
-        // Map over data.data since the API returns { status, data: [...] }
-        const blogItems: BlogItem[] = data.data.map((item: any) => ({
-          id: item.id,
-          title: item.title,
-          description: item.description,
-          video: sanitizeUrl(item.video),
-          image: undefined, // No image field in this data structure, or you can add a placeholder
-        }));
-        setBlogs(blogItems);
-        setLoading(false);
-      })
-      .catch(() => {
-        setBlogs([]);
-        setLoading(false);
-      });
-  }, []);
+  // useEffect removed since context handles fetching
 
 
   const videoPosts = blogs.filter(
@@ -93,7 +74,7 @@ const Blog: React.FC = () => {
   return (
     <div className="py-8 bg-gray-50 min-h-screen">
       <div className="w-full mx-auto px-2 sm:px-4 lg:px-8">
-         <div className="text-center mb-16">
+        <div className="text-center mb-16">
           <motion.h1
             initial={{ opacity: 0, y: -30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -113,30 +94,30 @@ const Blog: React.FC = () => {
         {/* Header with Subscribe */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center mb-6 space-x-3">
-  {/* Logo Avatar */}
-  <div className="w-24 h-24 rounded-full border border-gray-200 flex items-center justify-center shadow overflow-hidden bg-white">
-  <img
-    src="/images/logo.png"
-    alt="Ghar sansar Logo"
-    className="w-full h-40 object-cover"
-    draggable={false}
-  />
-</div>
+            {/* Logo Avatar */}
+            <div className="w-24 h-24 rounded-full border border-gray-200 flex items-center justify-center shadow overflow-hidden bg-white">
+              <img
+                src="/images/logo.png"
+                alt="Ghar sansar Logo"
+                className="w-full h-40 object-cover"
+                draggable={false}
+              />
+            </div>
 
-  {/* Brand Name and Subtitle */}
-  <div>
-    <div className="font-bold text-2xl text-gray-900 flex items-center space-x-2">
-      <span>Ghar sansar</span>
-      <button
-        className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded text-base font-semibold shadow ml-2"
-        onClick={handleSubscribe}
-      >
-        Subscribe
-      </button>
-    </div>
-    <div className="text-sm text-gray-500">Latest on our Social</div>
-  </div>
-</div>
+            {/* Brand Name and Subtitle */}
+            <div>
+              <div className="font-bold text-2xl text-gray-900 flex items-center space-x-2">
+                <span>Ghar sansar</span>
+                <button
+                  className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded text-base font-semibold shadow ml-2"
+                  onClick={handleSubscribe}
+                >
+                  Subscribe
+                </button>
+              </div>
+              <div className="text-sm text-gray-500">Latest on our Social</div>
+            </div>
+          </div>
         </div>
         {/* Video Reel (all autoplay, loop, no controls, no description) */}
         {videoPosts.length > 0 && (
@@ -161,7 +142,7 @@ const Blog: React.FC = () => {
                       allow="autoplay; encrypted-media"
                       allowFullScreen
                       className="rounded"
-                      style={{pointerEvents: "none"}}
+                      style={{ pointerEvents: "none" }}
                     />
                   ) : (
                     <video
