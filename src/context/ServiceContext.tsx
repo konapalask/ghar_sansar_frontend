@@ -49,27 +49,26 @@ export const ServiceProvider: React.FC<{ children: ReactNode }> = ({ children })
   const fetchServices = async (categoryType: string = "services") => {
     try {
       console.log("Loading services from local JSON mock data");
-      const categories = mockServices || [];
+      // Handle possible default export or direct array
+      const rawData = (mockServices as any).default || mockServices;
+      const categories = Array.isArray(rawData) ? rawData : [];
       console.log("Services categories found:", categories.length);
 
       const allServices: Service[] = [];
 
-      categories?.forEach((category: any) => {
+      categories.forEach((category: any) => {
         category.subcategories?.forEach((sub: any) => {
-          // Try both 'products' and 'images' fields
-          const items = sub.products || sub.images || [];
+          // Try 'services' as well as 'products' and 'images'
+          const items = sub.services || sub.products || sub.images || [];
           items.forEach((item: any, index: number) => {
-            if (index === 0 && allServices.length === 0) {
-              console.log("First service item:", item);
-            }
             allServices.push({
-              id: item.id || `${category.name}-${sub.name}-${index}`,
+              id: item.id || `${category.name || category.category}-${sub.name}-${index}`,
               title: item.title || item.name || "Untitled",
               description: item.description || "No description",
               price: item.price || "Custom Pricing",
               actual_price: item.actual_price || 0,
               image: fixImageUrl(item.image),
-              category_name: category.name,
+              category_name: category.name || category.category || "General",
               subcategory_name: sub.name,
               features: item.features || [],
             });
@@ -81,6 +80,8 @@ export const ServiceProvider: React.FC<{ children: ReactNode }> = ({ children })
       setServices(allServices);
     } catch (err) {
       console.error("❌ Error fetching services:", err);
+      // Fallback to empty if it fails to prevent crash
+      setServices([]);
     }
   };
 

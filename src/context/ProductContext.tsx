@@ -62,40 +62,30 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
         headers: { accept: "application/json" },
       });
 
-      console.log("API Response:", res.data);
       const data = res.data;
-
       const allProducts: Product[] = [];
 
-      // Handle the new API structure with {status: true, data: Array(6)}
-      // Or local JSON which is just an array
-      const categories = Array.isArray(data) ? data : (data.data || data.categories || []);
-      console.log("Categories found:", categories.length);
-      console.log("First category:", categories[0]);
-      console.log("First category subcategories:", categories[0]?.subcategories);
-      console.log("First subcategory:", categories[0]?.subcategories?.[0]);
-      console.log("First subcategory products:", categories[0]?.subcategories?.[0]?.products);
+      // Handle the new API structure or local JSON array
+      const rawCategories = Array.isArray(data) ? data : (data.data || data.categories || []);
+      const categories = Array.isArray(rawCategories) ? rawCategories : [];
 
-      categories?.forEach((category: any) => {
+      console.log("Categories found:", categories.length);
+
+      categories.forEach((category: any) => {
         category.subcategories?.forEach((sub: any) => {
-          // Try both 'products' and 'images' fields
-          const items = sub.products || sub.images || [];
+          // Try 'products', 'images', and 'services'
+          const items = sub.products || sub.images || sub.services || [];
           items.forEach((img: any, index: number) => {
             const imageUrl = fixImageUrl(img.image);
-            if (index === 0 && allProducts.length === 0) {
-              console.log("First product item:", img);
-              console.log("Original image URL:", img.image);
-              console.log("Fixed image URL:", imageUrl);
-            }
             allProducts.push({
-              id: img.id || `${category.name}-${sub.name}-${index}`,
+              id: img.id || `${category.name || category.category}-${sub.name}-${index}`,
               title: img.title || img.name || "Untitled Product",
               description: img.description || "",
               price: parseInt(img.price) || parseInt(img["act-price"]) || 0,
               actualPrice: parseInt(img["act-price"]) || parseInt(img.actual_price) || 0,
               image: imageUrl,
               video: img.video || "",
-              category: category.name,
+              category: category.name || category.category || "General",
               subCategory: sub.name,
             });
           });
@@ -103,9 +93,6 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
       });
 
       console.log("Total products found:", allProducts.length);
-      if (allProducts.length > 0) {
-        console.log("First product sample:", allProducts[0]);
-      }
       setProducts(allProducts);
     } catch (err) {
       console.error("Error fetching products:", err);
