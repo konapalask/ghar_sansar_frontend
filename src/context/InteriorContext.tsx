@@ -1,6 +1,7 @@
 // src/context/InteriorContext.tsx
 import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import axios from "axios";
+import categoriesData from "../data/categories.json";
 
 export interface InteriorWork {
   id: string;
@@ -56,14 +57,15 @@ export const InteriorProvider: React.FC<InteriorProviderProps> = ({ children }) 
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get(API_URL, { headers: { Accept: "application/json" } });
-      const responseData = res.data;
+      // AWS Endpoint Expired, using local data
+      const responseData = categoriesData;
 
              // Handle new JSON structure with data array
        const flatWorks: InteriorWork[] = [];
+       const dataArr = Array.isArray(responseData) ? responseData : (responseData as any).data || [];
        
-       if (responseData.data && Array.isArray(responseData.data)) {
-         responseData.data.forEach((category: any, catIndex: number) => {
+       if (dataArr && Array.isArray(dataArr)) {
+         dataArr.forEach((category: any, catIndex: number) => {
            category.subcategories.forEach((sub: any, subIndex: number) => {
              // Ensure image path starts with / for proper routing
              const imagePath = sub.image 

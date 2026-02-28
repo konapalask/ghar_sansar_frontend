@@ -56,25 +56,26 @@ export const ProductProvider: React.FC<{ children: ReactNode }> = ({ children })
     try {
       setLoading(true);
       setError(null);
-      console.log("Fetching products from:", `${API_BASE}/storage/upload/products`);
-      
-      const res = await axios.get(`${API_BASE}/storage/upload/products`, {
+      console.log("Fetching products from local fallback");
+
+      const res = await axios.get(`/products.json`, {
         headers: { accept: "application/json" },
       });
-      
+
       console.log("API Response:", res.data);
       const data = res.data;
 
       const allProducts: Product[] = [];
-      
+
       // Handle the new API structure with {status: true, data: Array(6)}
-      const categories = data.data || data.categories || [];
+      // Or local JSON which is just an array
+      const categories = Array.isArray(data) ? data : (data.data || data.categories || []);
       console.log("Categories found:", categories.length);
       console.log("First category:", categories[0]);
       console.log("First category subcategories:", categories[0]?.subcategories);
       console.log("First subcategory:", categories[0]?.subcategories?.[0]);
       console.log("First subcategory products:", categories[0]?.subcategories?.[0]?.products);
-      
+
       categories?.forEach((category: any) => {
         category.subcategories?.forEach((sub: any) => {
           // Try both 'products' and 'images' fields

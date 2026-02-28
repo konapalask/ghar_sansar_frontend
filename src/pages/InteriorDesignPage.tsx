@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Search } from "lucide-react";
 import axios from "axios";
+import categoriesData from "../data/categories.json";
 
 const itemsPerPage = 12;
 const placeholderImage = "/images/placeholder.jpg";
@@ -79,40 +80,43 @@ const InteriorDesignPage = () => {
 
 
   useEffect(() => {
-  const fetchCategories = async () => {
-    try {
-      const res = await axios.get(API_URL);
-      const data = res.data;
+    const fetchCategories = async () => {
+      try {
+        setLoading(true);
 
-      // Handle new JSON structure with data array
-      const apiCategories: Category[] = (data.data || []).map((cat: any) => {
-        const subcategories: Subcategory[] = (cat.subcategories || []).map((sub: any) => ({
-          name: sub.name,
-          image: sub.image ? (sub.image.startsWith('/') ? sub.image : `/${sub.image}`) : undefined,
-          video: sub.video ? (sub.video.startsWith('/') ? sub.video : `/${sub.video}`) : undefined
-        }));
+        // AWS Endpoint Expired, using local data
+        const data = categoriesData;
 
-        // Get first subcategory image as category image
-        const categoryImage = subcategories.length > 0 ? subcategories[0].image || "" : "";
+        // Handle new JSON structure with data array
+        const dataArr = Array.isArray(data) ? data : (data as any).data || [];
+        const apiCategories: Category[] = dataArr.map((cat: any) => {
+          const subcategories: Subcategory[] = (cat.subcategories || []).map((sub: any) => ({
+            name: sub.name,
+            image: sub.image ? (sub.image.startsWith('/') ? sub.image : `/${sub.image}`) : undefined,
+            video: sub.video ? (sub.video.startsWith('/') ? sub.video : `/${sub.video}`) : undefined
+          }));
 
-        return {
-          name: cat.name,
-          image: categoryImage,
-          features: cat.features || [],
-          subcategories,
-        };
-      });
+          // Get first subcategory image as category image
+          const categoryImage = subcategories.length > 0 ? subcategories[0].image || "" : "";
 
-      setCategories(apiCategories);
-    } catch (err) {
-      console.error("Failed to fetch categories:", err);
-      setCategories([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-  fetchCategories();
-}, []);
+          return {
+            name: cat.name,
+            image: categoryImage,
+            features: cat.features || [],
+            subcategories,
+          };
+        });
+
+        setCategories(apiCategories);
+      } catch (err) {
+        console.error("Failed to load categories:", err);
+        setCategories([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCategories();
+  }, []);
 
 
   // URL category param effect
@@ -155,7 +159,7 @@ const InteriorDesignPage = () => {
 
   const currentCat = categories.find((c) => c.name === activeCategory);
   const allSubcategories = currentCat?.subcategories ?? [];
-  
+
   // Filter subcategories based on search
   const filteredSubcategories = useMemo(() => {
     if (!search.trim()) return allSubcategories;
@@ -163,7 +167,7 @@ const InteriorDesignPage = () => {
       sub.name.toLowerCase().includes(search.toLowerCase())
     );
   }, [allSubcategories, search]);
-  
+
   const subCatTotalPages = Math.ceil(filteredSubcategories.length / itemsPerPage);
   const paginatedSubCategories = useMemo(() => {
     const startIdx = (subCatPage - 1) * itemsPerPage;
@@ -359,11 +363,10 @@ Please contact me.`;
                     setCurrentPage(page);
                     window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
-                  className={`px-4 py-2 rounded border ${
-                    currentPage === page
+                  className={`px-4 py-2 rounded border ${currentPage === page
                       ? "bg-red-600 text-white border-red-600"
                       : "hover:bg-gray-200"
-                  }`}
+                    }`}
                 >
                   {page}
                 </button>
@@ -455,11 +458,10 @@ Please contact me.`;
                       setSubCatPage(page);
                       window.scrollTo({ top: 0, behavior: "smooth" });
                     }}
-                    className={`px-4 py-2 rounded border ${
-                      subCatPage === page
+                    className={`px-4 py-2 rounded border ${subCatPage === page
                         ? "bg-red-600 text-white border-red-600"
                         : "hover:bg-gray-200"
-                    }`}
+                      }`}
                   >
                     {page}
                   </button>
@@ -508,17 +510,17 @@ Please contact me.`;
                 className="w-full h-[400px] object-cover mb-4 rounded mx-auto"
               />
             )}
-           <div>
-  <h3 className="font-semibold text-lg mb-2">Contact for this Design</h3>
-  <p><strong>Phone 1:</strong> <a href="tel:+918121135980" className="text-blue-600 underline">+91 81211 35980</a></p>
-  <p><strong>Phone 2:</strong> <a href="tel:+919248344434" className="text-blue-600 underline">+91 92483 44434</a></p>
-  <p><strong>Phone 3:</strong> <a href="tel:+919100322379" className="text-blue-600 underline">+91 91003 22379</a></p>
-  <p><strong>Phone 4:</strong> <a href="tel:+919440293980" className="text-blue-600 underline">+91 94402 93980</a></p>
-  <p><strong>Phone 5:</strong> <a href="tel:+919542088164" className="text-blue-600 underline">+91 95420 88164</a></p>
-  
-  <p><strong>Email:</strong> <a href="mailto:gharsansarshop@gmail.com" className="text-red-600 underline">gharsansarshop@gmail.com</a></p>
-  <p><strong>Address:</strong> 27-14-60, Rajagopalachari St, near Buckinghampet Post Office, Governor Peta, Vijayawada, Andhra Pradesh 520002.</p>
-</div>
+            <div>
+              <h3 className="font-semibold text-lg mb-2">Contact for this Design</h3>
+              <p><strong>Phone 1:</strong> <a href="tel:+918121135980" className="text-blue-600 underline">+91 81211 35980</a></p>
+              <p><strong>Phone 2:</strong> <a href="tel:+919248344434" className="text-blue-600 underline">+91 92483 44434</a></p>
+              <p><strong>Phone 3:</strong> <a href="tel:+919100322379" className="text-blue-600 underline">+91 91003 22379</a></p>
+              <p><strong>Phone 4:</strong> <a href="tel:+919440293980" className="text-blue-600 underline">+91 94402 93980</a></p>
+              <p><strong>Phone 5:</strong> <a href="tel:+919542088164" className="text-blue-600 underline">+91 95420 88164</a></p>
+
+              <p><strong>Email:</strong> <a href="mailto:gharsansarshop@gmail.com" className="text-red-600 underline">gharsansarshop@gmail.com</a></p>
+              <p><strong>Address:</strong> 27-14-60, Rajagopalachari St, near Buckinghampet Post Office, Governor Peta, Vijayawada, Andhra Pradesh 520002.</p>
+            </div>
 
           </div>
         </div>
