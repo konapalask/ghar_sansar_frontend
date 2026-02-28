@@ -1,35 +1,39 @@
 // src/pages/Home.tsx
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { ArrowRight, Truck, Shield, Headphones, XCircle, Eye, Palette, HandHeart, CheckCircle, Home as HomeIcon } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowRight, Truck, Shield, Headphones, XCircle, Eye, Palette, HandHeart, CheckCircle, Home as HomeIcon, ShoppingCart, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 import { useProducts } from "../context/ProductContext"; // ✅ using context
-import axios from "axios";
+import { useCart } from "../context/CartContext";
+import categoriesData from "../data/categories.json";
 
 const Home: React.FC = () => {
   const { products } = useProducts();
-  
+  const { addToCart } = useCart();
+  const navigate = useNavigate();
+
   // State for interior categories
   const [interiorCategories, setInteriorCategories] = useState<any[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
-  
+
   // Fetch interior categories
   useEffect(() => {
     const fetchInteriorCategories = async () => {
       try {
-        const res = await axios.get("https://lx70r6zsef.execute-api.ap-south-1.amazonaws.com/prod/api/storage/upload/interior");
-        const data = res.data;
-        
+        // AWS Endpoint Expired, using local data
+        const data = categoriesData;
+
         // Handle new JSON structure with data array
-        const categories = (data.data || []).map((cat: any) => ({
+        const dataArr = Array.isArray(data) ? data : (data as any).data || [];
+        const categories = dataArr.map((cat: any) => ({
           name: cat.name,
-          image: cat.subcategories?.[0]?.image 
+          image: cat.subcategories?.[0]?.image
             ? (cat.subcategories[0].image.startsWith('/') ? cat.subcategories[0].image : `/${cat.subcategories[0].image}`)
             : undefined,
           features: cat.features || [],
           subcategories: cat.subcategories || []
         }));
-        
+
         setInteriorCategories(categories.slice(0, 6)); // Show only first 6
       } catch (err) {
         console.error("Failed to fetch interior categories:", err);
@@ -38,7 +42,7 @@ const Home: React.FC = () => {
         setLoadingCategories(false);
       }
     };
-    
+
     fetchInteriorCategories();
   }, []);
 
@@ -115,13 +119,13 @@ const Home: React.FC = () => {
         <h2>Top Interior Designers in Hyderabad</h2>
         <h2>Ghar Sansar - #1 Interior Designers Vijayawada</h2>
       </div>
-      
+
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-blue-50 via-indigo-50 to-white py-12 sm:py-16 lg:py-20 overflow-hidden">
         {/* Decorative elements */}
         <div className="absolute top-0 right-0 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl"></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-400/10 rounded-full blur-3xl"></div>
-        
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Text */}
@@ -183,7 +187,7 @@ const Home: React.FC = () => {
       <section className="py-12 sm:py-16 bg-gradient-to-b from-white to-blue-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 sm:mb-12">
-            <motion.h2 
+            <motion.h2
               initial={{ opacity: 0, y: -20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
@@ -191,7 +195,7 @@ const Home: React.FC = () => {
             >
               How We Work
             </motion.h2>
-            <motion.p 
+            <motion.p
               initial={{ opacity: 0, y: -20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
@@ -223,12 +227,12 @@ const Home: React.FC = () => {
                     <div className={`w-20 h-20 rounded-full ${colorClasses[step.color as keyof typeof colorClasses]} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
                       <step.icon className="w-10 h-10" />
                     </div>
-                    
+
                     {/* Step Number */}
                     <div className="absolute -top-3 -right-3 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-sm">
                       {index + 1}
                     </div>
-                    
+
                     {/* Content */}
                     <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 sm:mb-3 px-2">
                       {step.title}
@@ -243,7 +247,7 @@ const Home: React.FC = () => {
           </div>
 
           {/* Call to Action */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
@@ -265,7 +269,7 @@ const Home: React.FC = () => {
         {/* Decorative background elements */}
         <div className="absolute top-20 left-10 w-72 h-72 bg-blue-400/5 rounded-full blur-3xl hidden sm:block"></div>
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-indigo-400/5 rounded-full blur-3xl hidden sm:block"></div>
-        
+
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="text-center mb-8 sm:mb-12 lg:mb-16">
             <motion.div
@@ -278,7 +282,7 @@ const Home: React.FC = () => {
                 Interior Design Services
               </span>
             </motion.div>
-            <motion.h2 
+            <motion.h2
               initial={{ opacity: 0, y: -20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
@@ -286,7 +290,7 @@ const Home: React.FC = () => {
             >
               Our Interior Works
             </motion.h2>
-            <motion.p 
+            <motion.p
               initial={{ opacity: 0, y: -20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
@@ -328,7 +332,7 @@ const Home: React.FC = () => {
                         )}
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-all duration-300"></div>
                       </div>
-                      
+
                       {/* Content */}
                       <div className="p-4 sm:p-6">
                         <h3 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 mb-2 sm:mb-3 group-hover:text-blue-600 transition-colors duration-200">
@@ -354,7 +358,7 @@ const Home: React.FC = () => {
           )}
 
           {/* CTA Button */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.6 }}
@@ -375,7 +379,7 @@ const Home: React.FC = () => {
       <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-white to-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 sm:mb-12 lg:mb-16">
-            <motion.h2 
+            <motion.h2
               initial={{ opacity: 0, y: -20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
@@ -383,7 +387,7 @@ const Home: React.FC = () => {
             >
               Recent Products
             </motion.h2>
-            <motion.p 
+            <motion.p
               initial={{ opacity: 0, y: -20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
@@ -405,18 +409,18 @@ const Home: React.FC = () => {
                 >
                   {/* Product Image */}
                   <div className="relative overflow-hidden bg-gray-100">
-                                         <img
-                       src={product.image}
-                       alt={product.title}
-                       className="w-full h-48 sm:h-56 md:h-64 object-cover group-hover:scale-110 transition-transform duration-500"
-                       loading="lazy"
-                     />
+                    <img
+                      src={product.image}
+                      alt={product.title}
+                      className="w-full h-48 sm:h-56 md:h-64 object-cover group-hover:scale-110 transition-transform duration-500"
+                      loading="lazy"
+                    />
                     <div className="absolute top-4 left-4 px-3 py-1.5 rounded-full text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 shadow-lg">
                       New
                     </div>
                     {/* Overlay on hover */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-6">
-                      <Link 
+                      <Link
                         to={`/products/${product.id}`}
                         className="bg-white text-blue-600 px-6 py-2 rounded-full font-semibold hover:bg-blue-600 hover:text-white transition-all duration-300"
                       >
@@ -430,6 +434,51 @@ const Home: React.FC = () => {
                     <h3 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 group-hover:text-blue-600 transition-colors duration-200">
                       {product.title}
                     </h3>
+                    {product.price && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <span className="text-lg font-bold text-blue-600">₹{product.price}</span>
+                        {product.actualPrice && product.actualPrice > product.price && (
+                          <span className="text-sm text-gray-500 line-through">₹{product.actualPrice}</span>
+                        )}
+                      </div>
+                    )}
+                    <div className="flex gap-2 mt-3">
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (product.price) {
+                            addToCart({
+                              id: product.id,
+                              name: product.title,
+                              price: product.price,
+                              image: product.image
+                            });
+                          }
+                        }}
+                        className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
+                      >
+                        <ShoppingCart className="w-4 h-4" />
+                        Cart
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (product.price) {
+                            addToCart({
+                              id: product.id,
+                              name: product.title,
+                              price: product.price,
+                              image: product.image
+                            });
+                            navigate('/checkout');
+                          }
+                        }}
+                        className="flex-1 flex items-center justify-center gap-1 px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold hover:bg-green-700 transition-colors"
+                      >
+                        <Zap className="w-4 h-4" />
+                        Buy
+                      </button>
+                    </div>
                   </div>
                 </motion.div>
               ))}

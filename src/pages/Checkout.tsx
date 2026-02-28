@@ -1,32 +1,30 @@
 import React, { useState } from 'react';
 import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext';
-import { Navigate } from 'react-router-dom';
-import { CreditCard, Lock, ShoppingBag, CheckCircle } from 'lucide-react';
+import { useOrders } from '../context/OrderContext';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { CreditCard, Lock, ShoppingBag, CheckCircle, Loader } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { initializeRazorpayPayment } from '../utils/razorpay';
+import toast from 'react-hot-toast';
 
 const Checkout: React.FC = () => {
   const { items, totalPrice, clearCart } = useCart();
-  const { user } = useAuth();
+  const { createOrder } = useOrders();
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [orderComplete, setOrderComplete] = useState(false);
+  const [processingPayment, setProcessingPayment] = useState(false);
   const [formData, setFormData] = useState({
     // Shipping
     firstName: '',
     lastName: '',
-    email: user?.email || '',
+    email: '',
     phone: '',
     address: '',
     city: '',
     state: '',
     zipCode: '',
-    country: 'United States',
-    
-    // Payment
-    cardNumber: '',
-    expiryDate: '',
-    cvv: '',
-    nameOnCard: '',
+    country: 'India',
     
     // Order notes
     notes: ''
@@ -43,16 +41,74 @@ const Checkout: React.FC = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (step === 1) {
       setStep(2);
     } else {
-      // Process order
-      setTimeout(() => {
-        setOrderComplete(true);
-        clearCart();
-      }, 1500);
+      // Process payment with Razorpay
+      await handlePayment();
+    }
+  };
+
+  const handlePayment = async () => {
+    if (processingPayment) return;
+    setProcessingPayment(true);
+    
+    const tax = totalPrice * 0.18; // 18% GST
+    const grandTotal = totalPrice + tax;
+    
+    try {
+      const orderId = `order_${Date.now()}`;
+      
+      await initializeRazorpayPayment({
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_YOUR_KEY',
+        amount: grandTotal * 100,
+        currency: 'INR',
+        orderId: orderId,
+        name: 'Ghar Sansar',
+        description: `Order for ${items.length} item(s)`,
+        prefill: {
+          name: `${formData.firstName} ${formData.lastName}`,
+          email: formData.email,
+          contact: formData.phone
+        },
+        handler: async (response: any) => {
+          console.log('Payment successful:', response);
+          const order = await createOrder({
+            customer: formData,
+            items: items.map(item => ({
+              id: item.id,
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity,
+              image: item.image
+            })),
+            subtotal: totalPrice,
+            tax: tax,
+            total: grandTotal,
+            paymentStatus: 'paid',
+            paymentId: response.razorpay_payment_id,
+            paymentMethod: 'razorpay'
+          });
+          if (order) {
+            toast.success('Order placed successfully!');
+            clearCart();
+            setOrderComplete(true);
+          } else {
+            toast.error('Failed to create order');
+          }
+        },
+        onError: (error: any) => {
+          console.error('Payment failed:', error);
+          toast.error('Payment failed. Please try again.');
+          setProcessingPayment(false);
+        }
+      });
+    } catch (error) {
+      console.error('Payment initialization error:', error);
+      toast.error('Failed to initialize payment');
+      setProcessingPayment(false);
     }
   };
 
@@ -70,10 +126,10 @@ const Checkout: React.FC = () => {
             Thank you for your purchase. Your order will be processed and shipped within 2-3 business days.
           </p>
           <p className="text-sm text-gray-500 mb-8">
-            Order #DC{Date.now().toString().slice(-6)}
+            Order #GS{Date.now().toString().slice(-8)}
           </p>
           <button
-            onClick={() => window.location.href = '/'}
+            onClick={() => navigate('/')}
             className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
           >
             Continue Shopping
@@ -83,7 +139,7 @@ const Checkout: React.FC = () => {
     );
   }
 
-  const tax = totalPrice * 0.08;
+  const tax = totalPrice * 0.18; // 18% GST
   const grandTotal = totalPrice + tax;
 
   return (
@@ -253,77 +309,23 @@ const Checkout: React.FC = () => {
                 {step === 2 && (
                   <div>
                     <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                      <Lock className="w-6 h-6 mr-3 text-green-500" />
-                      Payment Information
+                      <CreditCard className="w-6 h-6 mr-3 text-blue-600" />
+                      Payment via Razorpay
                     </h2>
                     
-                    <div className="space-y-6">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Card Number *
-                        </label>
-                        <div className="relative">
-                          <CreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                          <input
-                            type="text"
-                            name="cardNumber"
-                            required
-                            placeholder="1234 5678 9012 3456"
-                            value={formData.cardNumber}
-                            onChange={handleInputChange}
-                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Expiry Date *
-                          </label>
-                          <input
-                            type="text"
-                            name="expiryDate"
-                            required
-                            placeholder="MM/YY"
-                            value={formData.expiryDate}
-                            onChange={handleInputChange}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
-                        
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            CVV *
-                          </label>
-                          <input
-                            type="text"
-                            name="cvv"
-                            required
-                            placeholder="123"
-                            value={formData.cvv}
-                            onChange={handleInputChange}
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          />
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Name on Card *
-                        </label>
-                        <input
-                          type="text"
-                          name="nameOnCard"
-                          required
-                          value={formData.nameOnCard}
-                          onChange={handleInputChange}
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
+                    <div className="p-6 bg-blue-50 rounded-lg mb-6">
+                      <p className="text-gray-700 mb-4">
+                        <strong>Secure Payment</strong> powered by Razorpay
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <span className="bg-white px-3 py-1 rounded-md text-sm font-medium">Cards</span>
+                        <span className="bg-white px-3 py-1 rounded-md text-sm font-medium">UPI</span>
+                        <span className="bg-white px-3 py-1 rounded-md text-sm font-medium">Netbanking</span>
+                        <span className="bg-white px-3 py-1 rounded-md text-sm font-medium">Wallets</span>
                       </div>
                     </div>
 
-                    <div className="mt-6 p-4 bg-green-50 rounded-lg flex items-center space-x-3">
+                    <div className="p-4 bg-green-50 rounded-lg flex items-center space-x-3">
                       <Lock className="w-5 h-5 text-green-600" />
                       <span className="text-sm text-green-800">Your payment information is secure and encrypted</span>
                     </div>
@@ -335,16 +337,27 @@ const Checkout: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setStep(1)}
-                      className="flex-1 bg-gray-200 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-300 transition-colors font-semibold"
+                      disabled={processingPayment}
+                      className="flex-1 bg-gray-200 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-300 transition-colors font-semibold disabled:opacity-50"
                     >
                       Back to Shipping
                     </button>
                   )}
                   <button
                     type="submit"
-                    className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors font-semibold"
+                    disabled={processingPayment}
+                    className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors font-semibold disabled:opacity-50 flex items-center justify-center"
                   >
-                    {step === 1 ? 'Continue to Payment' : 'Complete Order'}
+                    {processingPayment ? (
+                      <>
+                        <Loader className="animate-spin mr-2" size={20} />
+                        Processing...
+                      </>
+                    ) : step === 1 ? (
+                      'Continue to Payment'
+                    ) : (
+                      'Pay ₹' + (totalPrice * 1.18).toFixed(2)
+                    )}
                   </button>
                 </div>
               </form>
@@ -374,7 +387,7 @@ const Checkout: React.FC = () => {
                     <h4 className="font-medium text-gray-900">{item.name}</h4>
                     <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
                   </div>
-                  <span className="font-semibold">${(item.price * item.quantity).toFixed(2)}</span>
+                  <span className="font-semibold">₹{(item.price * item.quantity).toFixed(2)}</span>
                 </div>
               ))}
             </div>
@@ -382,19 +395,19 @@ const Checkout: React.FC = () => {
             <div className="border-t border-gray-200 pt-4 space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600">Subtotal:</span>
-                <span className="font-semibold">${totalPrice.toFixed(2)}</span>
+                <span className="font-semibold">₹{totalPrice.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Shipping:</span>
                 <span className="font-semibold text-green-600">Free</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Tax:</span>
-                <span className="font-semibold">${tax.toFixed(2)}</span>
+                <span className="text-gray-600">Tax (18% GST):</span>
+                <span className="font-semibold">₹{tax.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-xl font-bold pt-3 border-t border-gray-200">
                 <span>Total:</span>
-                <span className="text-blue-600">${grandTotal.toFixed(2)}</span>
+                <span className="text-blue-600">₹{grandTotal.toFixed(2)}</span>
               </div>
             </div>
           </motion.div>

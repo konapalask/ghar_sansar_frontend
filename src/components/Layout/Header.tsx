@@ -270,13 +270,13 @@ const Header: React.FC = () => {
             </div>
           )}
 
-          {/* Cart
+          {/* Cart */}
           <Link to="/cart" aria-label="Cart" className="relative p-2 text-gray-600 hover:text-blue-600">
-            <ShoppingCart />
+            <ShoppingCart className="w-6 h-6" />
             {totalItems > 0 && (
-              <span className="absolute top-0 right-0 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{totalItems}</span>
+              <span className="absolute top-0 right-0 bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">{totalItems}</span>
             )}
-          </Link> */}
+          </Link>
 
           {/* User menu */}
           {user ? (
@@ -341,6 +341,12 @@ const Header: React.FC = () => {
               <li>
                 <Link to="/blog" onClick={() => setMenuOpen(false)} className="block px-3 py-2 rounded hover:bg-gray-100">
                   Blog
+                </Link>
+              </li>
+              <li>
+                <Link to="/cart" onClick={() => setMenuOpen(false)} className="block px-3 py-2 rounded hover:bg-gray-100 flex items-center gap-2">
+                  <ShoppingCart className="w-5 h-5" />
+                  Cart {totalItems > 0 && <span className="bg-blue-600 text-white text-xs rounded-full px-2 py-0.5">{totalItems}</span>}
                 </Link>
               </li>
               {user ? (

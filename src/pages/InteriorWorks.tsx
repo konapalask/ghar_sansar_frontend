@@ -1,7 +1,7 @@
 // src/pages/InteriorWorks.tsx
 import React, { useEffect, useState, useMemo } from "react";
-import axios from "axios";
 import { useSearchParams } from "react-router-dom";
+import categoriesData from "../data/categories.json";
 
 interface InteriorWork {
   id: string;
@@ -12,7 +12,8 @@ interface InteriorWork {
   subCategory: string;
 }
 
-const API_URL = "https://lx70r6zsef.execute-api.ap-south-1.amazonaws.com/prod/api/storage/upload/interior";
+// src/pages/InteriorWorks.tsx
+
 const ITEMS_PER_PAGE = 9; // adjust per your layout (3x3 grid etc.)
 
 const InteriorWorks: React.FC = () => {
@@ -27,20 +28,23 @@ const InteriorWorks: React.FC = () => {
   useEffect(() => {
     const fetchWorks = async () => {
       try {
-        const res = await axios.get(API_URL);
-        const responseData = res.data;
+        setLoading(true);
+        // AWS Endpoint Expired, using local data
+        const responseData = categoriesData;
 
         // Handle new JSON structure with data array
         const flatWorks: InteriorWork[] = [];
-        
-        if (responseData.data && Array.isArray(responseData.data)) {
-          responseData.data.forEach((category: any, catIndex: number) => {
+
+        const dataArr = Array.isArray(responseData) ? responseData : (responseData as any).data || [];
+
+        if (dataArr && Array.isArray(dataArr)) {
+          dataArr.forEach((category: any, catIndex: number) => {
             category.subcategories.forEach((sub: any, subIndex: number) => {
               // Ensure image path starts with / for proper routing
-              const imagePath = sub.image 
+              const imagePath = sub.image
                 ? (sub.image.startsWith('/') ? sub.image : `/${sub.image}`)
                 : undefined;
-              
+
               flatWorks.push({
                 id: `${catIndex}-${subIndex}`,
                 title: sub.name,
@@ -55,7 +59,7 @@ const InteriorWorks: React.FC = () => {
 
         setWorks(flatWorks);
       } catch (err) {
-        console.error("Failed to fetch interior works:", err);
+        console.error("Failed to load interior works:", err);
         setWorks([]);
       } finally {
         setLoading(false);
@@ -122,11 +126,10 @@ const InteriorWorks: React.FC = () => {
             <button
               key={page}
               onClick={() => setCurrentPage(page)}
-              className={`px-4 py-2 rounded border ${
-                currentPage === page
-                  ? "bg-red-600 text-white border-red-600"
-                  : "hover:bg-gray-200"
-              }`}
+              className={`px-4 py-2 rounded border ${currentPage === page
+                ? "bg-red-600 text-white border-red-600"
+                : "hover:bg-gray-200"
+                }`}
             >
               {page}
             </button>

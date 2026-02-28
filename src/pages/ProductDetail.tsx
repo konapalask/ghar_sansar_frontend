@@ -1,12 +1,14 @@
 // src/pages/ProductDetail.tsx
 import React, { useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Phone, MessageCircle, MapPinIcon, ChevronLeft, ArrowLeft } from "lucide-react";
+import { Phone, MessageCircle, MapPinIcon, ChevronLeft, ArrowLeft, ShoppingCart, Zap } from "lucide-react";
 import { useProducts } from "../context/ProductContext";
+import { useCart } from "../context/CartContext";
 
 const ProductDetail: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { addToCart } = useCart();
 
   // Product id from URL
   const { pathname, search, state } = location;
@@ -55,6 +57,23 @@ const ProductDetail: React.FC = () => {
         {product.name || product.title}
       </h1>
 
+      {/* Price */}
+      {product.price ? (
+        <div className="mt-4 flex items-center gap-3">
+          <span className="text-3xl font-bold text-blue-600">₹{product.price}</span>
+          {product.actualPrice && product.actualPrice > product.price && (
+            <span className="text-xl text-gray-500 line-through">₹{product.actualPrice}</span>
+          )}
+          {product.actualPrice && product.actualPrice > product.price && (
+            <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold">
+              {Math.round((1 - product.price / product.actualPrice) * 100)}% OFF
+            </span>
+          )}
+        </div>
+      ) : (
+        <p className="mt-4 text-xl text-gray-600">Contact for Price</p>
+      )}
+
       {/* Product Description */}
       <div
         className="relative mt-6 p-6 bg-gradient-to-r from-gray-50 to-gray-100 
@@ -66,8 +85,41 @@ const ProductDetail: React.FC = () => {
         </p>
       </div>
 
+      {/* Buy Now and Add to Cart Buttons */}
+      {product.price && (
+        <div className="flex gap-4 mt-8">
+          <button
+            onClick={() => {
+              addToCart({
+                id: product.id,
+                name: product.title,
+                price: product.price,
+                image: product.image
+              });
+            }}
+            className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg shadow-lg hover:bg-blue-700 transition-colors font-semibold text-lg"
+          >
+            <ShoppingCart size={20} /> Add to Cart
+          </button>
+          <button
+            onClick={() => {
+              addToCart({
+                id: product.id,
+                name: product.title,
+                price: product.price,
+                image: product.image
+              });
+              navigate('/checkout');
+            }}
+            className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg shadow-lg hover:bg-green-700 transition-colors font-semibold text-lg"
+          >
+            <Zap size={20} /> Buy Now
+          </button>
+        </div>
+      )}
+
       {/* Contact Options */}
-      <div className="flex gap-4 mt-8 flex-wrap">
+      <div className="flex gap-4 mt-4 flex-wrap">
         {/* Call */}
         <a
           href="tel:+918121135980"
