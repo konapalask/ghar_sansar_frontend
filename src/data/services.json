@@ -1,0 +1,51 @@
+[
+    {
+        "name": "interior_design_services",
+        "subcategories": [
+            {
+                "name": "full_home",
+                "services": [
+                    {
+                        "id": "srv-1",
+                        "title": "Full Home Interior Makeover",
+                        "description": "A complete top-to-bottom interior design service tailored to your home. Includes space planning, furniture selection, and 3D visualization.",
+                        "price": 50000,
+                        "actual_price": 75000,
+                        "image": "/interior/wallpaper/1.jpeg",
+                        "features": [
+                            "End-to-end design execution",
+                            "Custom furniture planning",
+                            "Lighting & decor consultation"
+                        ]
+                    },
+                    {
+                        "id": "srv-2",
+                        "title": "Modular Kitchen Setup",
+                        "description": "Modern and highly functional modular kitchen designs customized to maximize your space and utility with premium materials.",
+                        "price": 25000,
+                        "actual_price": 35000,
+                        "image": "/interior/wallpaper_rolls/2.jpg",
+                        "features": [
+                            "Ergonomic cabinet designs",
+                            "Premium hardware & finishes",
+                            "Space optimization"
+                        ]
+                    },
+                    {
+                        "id": "srv-3",
+                        "title": "Living Room Styling",
+                        "description": "Transform your living area into a cozy and aesthetic space for your family and guests. Custom TV units, seating, and decor.",
+                        "price": 15000,
+                        "actual_price": 20000,
+                        "image": "/interior/3dbokka/2.jpeg",
+                        "features": [
+                            "Custom TV unit design",
+                            "Soft furnishing selection",
+                            "Ambient lighting setup"
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]

@@ -1,6 +1,7 @@
 // src/context/ServiceContext.tsx
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import axios from "axios";
+import mockServices from "../data/services.json";
 
 export interface Service {
   id: string;                  // backend id
@@ -47,17 +48,11 @@ export const ServiceProvider: React.FC<{ children: ReactNode }> = ({ children })
   // ✅ Fetch services
   const fetchServices = async (categoryType: string = "services") => {
     try {
-      console.log("Fetching services from:", `${API_BASE}/storage/upload/services`);
-      const res = await axios.get(`${API_BASE}/storage/upload/services`, {
-        headers: { accept: "application/json" },
-      });
-      console.log("Services API Response:", res.data);
-      const data = res.data;
-      const allServices: Service[] = [];
-
-      // Handle the new API structure with {status: true, data: Array}
-      const categories = data.data || data.categories || [];
+      console.log("Loading services from local JSON mock data");
+      const categories = mockServices || [];
       console.log("Services categories found:", categories.length);
+
+      const allServices: Service[] = [];
 
       categories?.forEach((category: any) => {
         category.subcategories?.forEach((sub: any) => {
