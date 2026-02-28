@@ -78,10 +78,10 @@ async function main() {
       const productEntry = {
         id: `23-evening-${i + 1}`,
         name: details.name,
-        image: `https://your-s3-bucket-or-domain.com/products/23 evening/${file}`, // Adjust as needed
+        image: `/products/23 evening/${file}`,
         description: details.description,
-        price: 0,
-        originalPrice: 0,
+        price: details.price || 0,
+        originalPrice: details.actualPrice || 0,
         category: "23_evening",
         filename: file
       };
